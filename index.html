@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>joymne</title>
+
+  <!-- Метатеги для standalone-режима iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="joymne" />
+  <meta name="theme-color" content="#0d0f12" />
+
+  <style>
+    :root {
+      --bg: #0d0f12;
+      --card-bg: #181b20;
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.4);
+      --recording: #ef4444;
+      --recording-glow: rgba(239, 68, 68, 0.5);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(env(safe-area-inset-top) + 20px) 20px calc(env(safe-area-inset-bottom) + 20px) 20px;
+      overflow: hidden;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    .brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .voice-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .mic-button {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 3px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px var(--primary-glow);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .mic-button svg {
+      width: 60px;
+      height: 60px;
+      fill: var(--primary);
+      transition: all 0.25s ease;
+    }
+
+    body.recording .mic-button {
+      border-color: var(--recording);
+      box-shadow: 0 0 50px var(--recording-glow);
+      animation: pulse 1.3s infinite ease-in-out;
+    }
+
+    body.recording .mic-button svg {
+      fill: var(--recording);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1.05); box-shadow: 0 0 30px var(--recording-glow); }
+      50% { transform: scale(1.15); box-shadow: 0 0 65px var(--recording-glow); }
+    }
+
+    .status-text {
+      margin-top: 28px;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .transcript-preview {
+      margin-top: 14px;
+      font-size: 1.05rem;
+      color: var(--text);
+      max-width: 90%;
+      text-align: center;
+      line-height: 1.4;
+      min-height: 24px;
+    }
+
+    footer {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .text-toggle-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size:
