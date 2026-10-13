@@ -207,7 +207,8 @@
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTlcW7novwK4hcwWCqIKDBq-4ExUp4gqx5def5V0liPJc7Dg/exec";
+    // Актуальный URL развертывания Google Apps Script
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
 
     const voiceBox = document.getElementById("voiceBox");
     const status = document.getElementById("status");
@@ -241,8 +242,11 @@
       recognition.onresult = (e) => {
         let interim = "";
         for (let i = e.resultIndex; i < e.results.length; ++i) {
-          if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
-          else interim += e.results[i][0].transcript;
+          if (e.results[i].isFinal) {
+            finalTranscript += e.results[i][0].transcript;
+          } else {
+            interim += e.results[i][0].transcript;
+          }
         }
         preview.innerText = finalTranscript || interim;
       };
@@ -312,8 +316,11 @@
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ text: text })
+          headers: { 
+            "Content-Type": "text/plain;charset=utf-8" 
+          },
+          body: JSON.stringify({ text: text }),
+          redirect: "follow"
         });
 
         const data = await response.json();
@@ -327,11 +334,12 @@
             preview.innerText = "";
           }, 2500);
         } else {
-          showToast("Ошибка: " + (data.message || "Ошибка"));
+          showToast("Ошибка: " + (data.message || "Не удалось обработать"));
           status.innerText = "Коснитесь для записи";
         }
       } catch (err) {
-        showToast("Ошибка соединения");
+        console.error("Fetch error:", err);
+        showToast("Ошибка соединения: " + err.message);
         status.innerText = "Коснитесь для записи";
       }
     }
