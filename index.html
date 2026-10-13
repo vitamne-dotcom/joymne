@@ -5,24 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>joymne</title>
 
-  <!-- Метатеги для standalone-режима iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="joymne" />
   <meta name="theme-color" content="#0d0f12" />
 
   <style>
-    :root {
-      --bg: #0d0f12;
-      --card-bg: #181b20;
-      --primary: #3b82f6;
-      --primary-glow: rgba(59, 130, 246, 0.4);
-      --recording: #ef4444;
-      --recording-glow: rgba(239, 68, 68, 0.5);
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
@@ -32,99 +20,327 @@
       -webkit-user-select: none;
     }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-      min-height: 100vh;
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #0d0f12;
+      color: #f3f4f6;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    }
+
+    .app-container {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: calc(env(safe-area-inset-top) + 20px) 20px calc(env(safe-area-inset-bottom) + 20px) 20px;
-      overflow: hidden;
+      align-items: center;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding: 40px 20px 30px 20px;
     }
 
     header {
-      text-align: center;
-    }
-
-    .brand {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 700;
-      letter-spacing: 0.8px;
-      color: var(--text-muted);
+      letter-spacing: 1px;
+      color: #9ca3af;
+      text-transform: lowercase;
     }
 
-    .voice-stage {
-      flex: 1;
+    .voice-box {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      width: 100%;
     }
 
-    .mic-button {
-      width: 140px;
-      height: 140px;
+    .mic-btn {
+      width: 130px;
+      height: 130px;
       border-radius: 50%;
-      background: var(--card-bg);
-      border: 3px solid var(--primary);
+      background: #181b20;
+      border: 3px solid #3b82f6;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 30px var(--primary-glow);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .mic-button svg {
-      width: 60px;
-      height: 60px;
-      fill: var(--primary);
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
       transition: all 0.25s ease;
     }
 
-    body.recording .mic-button {
-      border-color: var(--recording);
-      box-shadow: 0 0 50px var(--recording-glow);
-      animation: pulse 1.3s infinite ease-in-out;
+    .mic-btn svg {
+      width: 56px;
+      height: 56px;
+      fill: #3b82f6;
     }
 
-    body.recording .mic-button svg {
-      fill: var(--recording);
+    body.recording .mic-btn {
+      border-color: #ef4444;
+      box-shadow: 0 0 45px rgba(239, 68, 68, 0.6);
+      transform: scale(1.05);
     }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1.05); box-shadow: 0 0 30px var(--recording-glow); }
-      50% { transform: scale(1.15); box-shadow: 0 0 65px var(--recording-glow); }
+    body.recording .mic-btn svg {
+      fill: #ef4444;
     }
 
-    .status-text {
-      margin-top: 28px;
-      font-size: 1.2rem;
+    .status {
+      margin-top: 24px;
+      font-size: 1.15rem;
+      color: #9ca3af;
+      text-align: center;
       font-weight: 500;
-      color: var(--text-muted);
-      text-align: center;
     }
 
-    .transcript-preview {
-      margin-top: 14px;
+    .preview {
+      margin-top: 12px;
       font-size: 1.05rem;
-      color: var(--text);
-      max-width: 90%;
+      color: #fff;
       text-align: center;
-      line-height: 1.4;
       min-height: 24px;
+      max-width: 90%;
     }
 
     footer {
+      width: 100%;
+      max-width: 360px;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
-    .text-toggle-btn {
+    .manual-btn {
       background: none;
       border: none;
-      color: var(--primary);
-      font-size:
+      color: #3b82f6;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .input-row {
+      display: none;
+      gap: 8px;
+      background: #181b20;
+      border: 1px solid #2a2e37;
+      border-radius: 14px;
+      padding: 6px 8px 6px 14px;
+    }
+
+    .input-row.open {
+      display: flex;
+    }
+
+    .input-row input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 1rem;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .input-row button {
+      background: #3b82f6;
+      border: none;
+      color: #fff;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #181b20;
+      border: 1px solid #374151;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      transition: transform 0.3s ease;
+      z-index: 999;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast"></div>
+
+  <div class="app-container">
+    <header>joymne</header>
+
+    <div class="voice-box" id="voiceBox">
+      <div class="mic-btn">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
+      </div>
+      <div class="status" id="status">Коснитесь для записи</div>
+      <div class="preview" id="preview"></div>
+    </div>
+
+    <footer>
+      <button class="manual-btn" id="toggleInput">Ввести вручную</button>
+      <div class="input-row" id="inputRow">
+        <input type="text" id="manualText" placeholder="например: такси 300 руб" />
+        <button id="sendBtn">ОК</button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTlcW7novwK4hcwWCqIKDBq-4ExUp4gqx5def5V0liPJc7Dg/exec";
+
+    const voiceBox = document.getElementById("voiceBox");
+    const status = document.getElementById("status");
+    const preview = document.getElementById("preview");
+    const toggleInput = document.getElementById("toggleInput");
+    const inputRow = document.getElementById("inputRow");
+    const manualText = document.getElementById("manualText");
+    const sendBtn = document.getElementById("sendBtn");
+    const toast = document.getElementById("toast");
+
+    let isRecording = false;
+    let recognition = null;
+    let finalTranscript = "";
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = "ru-RU";
+
+      recognition.onstart = () => {
+        isRecording = true;
+        document.body.classList.add("recording");
+        status.innerText = "Слушаю...";
+        preview.innerText = "";
+        finalTranscript = "";
+      };
+
+      recognition.onresult = (e) => {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; ++i) {
+          if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
+          else interim += e.results[i][0].transcript;
+        }
+        preview.innerText = finalTranscript || interim;
+      };
+
+      recognition.onerror = (e) => {
+        stopRecording();
+        showToast("Ошибка микрофона: " + e.error);
+      };
+
+      recognition.onend = () => {
+        stopRecording();
+        if (finalTranscript.trim()) {
+          sendTransaction(finalTranscript.trim());
+        }
+      };
+    } else {
+      status.innerText = "Голос не поддерживается";
+    }
+
+    function startRecording() {
+      if (!recognition) return;
+      try { recognition.start(); } catch (e) {}
+    }
+
+    function stopRecording() {
+      isRecording = false;
+      document.body.classList.remove("recording");
+      status.innerText = "Коснитесь для записи";
+      if (recognition) {
+        try { recognition.stop(); } catch (e) {}
+      }
+    }
+
+    voiceBox.addEventListener("click", () => {
+      if (isRecording) stopRecording();
+      else startRecording();
+    });
+
+    toggleInput.addEventListener("click", () => {
+      inputRow.classList.toggle("open");
+      if (inputRow.classList.contains("open")) {
+        manualText.focus();
+        toggleInput.innerText = "Скрыть";
+      } else {
+        toggleInput.innerText = "Ввести вручную";
+      }
+    });
+
+    sendBtn.addEventListener("click", () => {
+      const val = manualText.value.trim();
+      if (val) {
+        sendTransaction(val);
+        manualText.value = "";
+        inputRow.classList.remove("open");
+        toggleInput.innerText = "Ввести вручную";
+      }
+    });
+
+    manualText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendBtn.click();
+    });
+
+    async function sendTransaction(text) {
+      status.innerText = "Обработка Gemini...";
+      showToast("Распознаем транзакцию...");
+
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ text: text })
+        });
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+          const tx = data.transaction;
+          showToast(`✓ ${tx.amount} ${tx.currency} — ${tx.category}`);
+          status.innerText = "Сохранено!";
+          setTimeout(() => {
+            status.innerText = "Коснитесь для записи";
+            preview.innerText = "";
+          }, 2500);
+        } else {
+          showToast("Ошибка: " + (data.message || "Ошибка"));
+          status.innerText = "Коснитесь для записи";
+        }
+      } catch (err) {
+        showToast("Ошибка соединения");
+        status.innerText = "Коснитесь для записи";
+      }
+    }
+
+    function showToast(msg) {
+      toast.innerText = msg;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
