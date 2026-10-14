@@ -58,6 +58,8 @@
       justify-content: center;
       width: 100%;
       cursor: pointer;
+      margin-bottom: auto;
+      margin-top: auto;
     }
 
     .preview {
@@ -225,7 +227,7 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "5.1";
+    const APP_VERSION = "5.3";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -405,7 +407,6 @@
       toast.innerText = msg;
       toast.classList.add("show");
       setTimeout(() => {
-        toast.classList.0 = "show"; // safe cleanup
         toast.classList.remove("show");
       }, 3000);
     }
