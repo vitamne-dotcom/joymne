@@ -42,7 +42,7 @@
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: max(20px, env(safe-area-inset-top) + 10px) 16px max(24px, env(safe-area-inset-bottom)) 16px;
+      padding: max(20px, env(safe-area-inset-top) + 10px) 14px max(20px, env(safe-area-inset-bottom)) 14px;
       transition: height 0.15s ease-out;
     }
 
@@ -67,30 +67,29 @@
       max-width: 400px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       margin-top: auto;
     }
 
-    /* Ряд 1: Транзит и Долги (отцентрованы, круглые/овальные) */
+    /* Ряд 1: Долги слева, Транзит справа (круглые в один ряд) */
     .actions-row {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
       width: 100%;
     }
 
     .action-circle-btn {
       background: #181b20;
       border: 2px solid #3b82f6;
-      border-radius: 35px;
-      width: 48%;
-      padding: 14px 10px;
+      border-radius: 30px;
+      padding: 12px 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 0 25px rgba(59, 130, 246, 0.2);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
       transition: all 0.2s ease;
       text-align: center;
     }
@@ -101,38 +100,38 @@
     }
 
     .action-title {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: #fff;
     }
 
     .action-sub {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #9ca3af;
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
     /* Ряд 2: 3 круглые кнопки касс (Мила, Банк, Нал) */
     .wallets-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 8px;
     }
 
     .wallet-circle-btn {
       background: #181b20;
       border: 2px solid #2a2e37;
-      border-radius: 40px;
-      padding: 16px 6px;
+      border-radius: 35px;
+      padding: 14px 4px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
       transition: all 0.2s ease;
       text-align: center;
-      min-height: 90px;
+      min-height: 80px;
     }
 
     .wallet-circle-btn:active {
@@ -141,16 +140,16 @@
     }
 
     .wallet-title {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       color: #fff;
     }
 
     .wallet-amount {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
       color: #3b82f6;
-      margin-top: 4px;
+      margin-top: 3px;
     }
 
     /* Модальное окно ввода */
@@ -158,11 +157,11 @@
       width: 100%;
       background: #181b20;
       border: 1px solid #3b82f6;
-      border-radius: 24px;
-      padding: 16px;
+      border-radius: 20px;
+      padding: 14px;
       display: none;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
 
@@ -174,7 +173,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: #3b82f6;
       font-weight: 600;
     }
@@ -183,7 +182,7 @@
       background: none;
       border: none;
       color: #9ca3af;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       cursor: pointer;
       padding: 0 5px;
     }
@@ -197,10 +196,10 @@
       flex: 1;
       background: #0d0f12;
       border: 1px solid #2a2e37;
-      border-radius: 14px;
-      padding: 12px 14px;
+      border-radius: 12px;
+      padding: 10px 12px;
       color: #fff;
-      font-size: 1rem;
+      font-size: 0.95rem;
       outline: none;
       user-select: text;
       -webkit-user-select: text;
@@ -210,8 +209,8 @@
       background: #3b82f6;
       border: none;
       color: #fff;
-      border-radius: 14px;
-      padding: 0 18px;
+      border-radius: 12px;
+      padding: 0 16px;
       font-weight: 600;
       cursor: pointer;
     }
@@ -220,12 +219,12 @@
       background: #2a2e37;
       border: none;
       color: #fff;
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 10px;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     .toast {
@@ -284,18 +283,148 @@
       </div>
 
       <!-- Кнопки действий и касс -->
-      <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 10px;">
-        <!-- Ряд 1: Транзит и Долги (отцентрованы) -->
+      <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Ряд 1: Долги слева, Транзит справа (круглые) -->
         <div class="actions-row">
-          <div class="action-circle-btn" onclick="openInput('Транзит')">
-            <div class="action-title">Транзит</div>
-            <div class="action-sub">перевод</div>
-          </div>
           <div class="action-circle-btn" onclick="openInput('Долги')">
             <div class="action-title">Долги</div>
             <div class="action-sub">учет</div>
           </div>
+          <div class="action-circle-btn" onclick="openInput('Транзит')">
+            <div class="action-title">Транзит</div>
+            <div class="action-sub">перевод</div>
+          </div>
         </div>
 
-        <!-- Ряд 2: Мила, Банк, Нал (круглые) -->
+        <!-- Ряд 2: Мила, Банк, Нал (круглые с суммой) -->
         <div class="wallets-row">
+          <div class="wallet-circle-btn" onclick="openInput('Мила')">
+            <div class="wallet-title">Мила</div>
+            <div class="wallet-amount" id="bal-mila">0 €</div>
+          </div>
+          <div class="wallet-circle-btn" onclick="openInput('Банк')">
+            <div class="wallet-title">Банк</div>
+            <div class="wallet-amount" id="bal-bank">0 €</div>
+          </div>
+          <div class="wallet-circle-btn" onclick="openInput('Нал')">
+            <div class="wallet-title">Нал</div>
+            <div class="wallet-amount" id="bal-nal">0 €</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
+    const APP_VERSION = "24.0";
+
+    if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
+      localStorage.setItem("joymne_ver", APP_VERSION);
+      window.location.replace(window.location.pathname + "?v=" + Date.now());
+    }
+
+    let activeCategory = "";
+
+    function updateViewport() {
+      if (window.visualViewport) {
+        document.getElementById("appContainer").style.height = window.visualViewport.height + "px";
+        window.scrollTo(0, 0);
+      }
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateViewport);
+      window.visualViewport.addEventListener("scroll", updateViewport);
+      updateViewport();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadBalances();
+      const savedMsg = sessionStorage.getItem("joymne_toast");
+      if (savedMsg) {
+        sessionStorage.removeItem("joymne_toast");
+        showToast(savedMsg);
+      }
+    });
+
+    async function loadBalances() {
+      try {
+        const res = await fetch(APPS_SCRIPT_URL + "?action=getBalances");
+        const data = await res.json();
+        if (data.status === "success") {
+          document.getElementById("bal-mila").innerText = (data.balances.Мила || 0) + " €";
+          document.getElementById("bal-bank").innerText = (data.balances.Банк || 0) + " €";
+          document.getElementById("bal-nal").innerText = (data.balances.Нал || 0) + " €";
+        }
+      } catch (e) {}
+    }
+
+    function openInput(category) {
+      activeCategory = category;
+      document.getElementById("selectedActionTitle").innerText = category === 'Транзит' ? 'Транзит (с Милы на Банк 100)' : (category === 'Долги' ? 'Долги (дал / вернул)' : 'Касса: ' + category);
+      document.getElementById("buttonsSection").style.display = "none";
+      document.getElementById("inputBox").classList.add("open");
+      
+      const input = document.getElementById("txInput");
+      input.value = "";
+      input.focus();
+    }
+
+    function closeInput() {
+      document.getElementById("inputBox").classList.remove("open");
+      document.getElementById("buttonsSection").style.display = "flex";
+    }
+
+    async function submitTransaction(photoBase64 = null) {
+      const text = document.getElementById("txInput").value.trim();
+      if (!text && !photoBase64) return;
+
+      closeInput();
+      showToast("Сохранение...");
+
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ category: activeCategory, text: text, photo: photoBase64 }),
+          redirect: "follow"
+        });
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+          sessionStorage.setItem("joymne_toast", "✓ Сохранено успешно!");
+          window.location.replace(window.location.pathname + "?t=" + Date.now());
+        } else {
+          showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
+        }
+      } catch (err) {
+        showToast("Ошибка соединения");
+      }
+    }
+
+    function handlePhoto(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          submitTransaction(e.target.result);
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    document.getElementById("txInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") submitTransaction();
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.classList.add("show");
+      setTimeout(() => { toast.classList.remove("show"); }, 3000);
+    }
+  </script>
+</body>
+</html>
