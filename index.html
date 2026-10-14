@@ -213,7 +213,7 @@
           <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
         </svg>
       </div>
-      <div class="status" id="status">Коснитесь для записи</div>
+      <div class="status" id="status">Коснитесь для новой записи</div>
     </div>
 
     <footer>
@@ -227,7 +227,7 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "9.0";
+    const APP_VERSION = "10.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -246,15 +246,14 @@
     let isRecording = false;
     let recognition = null;
     let currentTranscript = "";
-    let silenceTimer = null;
 
-    // Показываем уведомление об успехе после перезагрузки
     window.addEventListener("DOMContentLoaded", () => {
       const savedMsg = sessionStorage.getItem("joymne_toast");
       if (savedMsg) {
         sessionStorage.removeItem("joymne_toast");
         showToast(savedMsg);
       }
+      status.innerText = "Коснитесь для новой записи";
     });
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -277,19 +276,18 @@
       }
 
       killRecognition();
-      clearTimeout(silenceTimer);
       currentTranscript = "";
       preview.innerText = "";
 
       recognition = new SpeechRecognition();
       recognition.lang = "ru-RU";
-      recognition.continuous = false;
+      recognition.continuous = true; // Слушаем непрерывно, пока пользователь не нажмет кнопку стоп
       recognition.interimResults = true;
 
       recognition.onstart = () => {
         isRecording = true;
         document.body.classList.add("recording");
-        status.innerText = "Слушаю...";
+        status.innerText = "Слушаю... (нажмите еще раз для отправки)";
       };
 
       recognition.onresult = (e) => {
@@ -299,40 +297,27 @@
         }
         currentTranscript = text.trim();
         preview.innerText = currentTranscript;
-
-        clearTimeout(silenceTimer);
-        if (currentTranscript) {
-          silenceTimer = setTimeout(() => {
-            if (isRecording && recognition) {
-              try { recognition.stop(); } catch (err) {}
-            }
-          }, 1400);
-        }
       };
 
       recognition.onerror = (e) => {
-        clearTimeout(silenceTimer);
         isRecording = false;
         killRecognition();
         document.body.classList.remove("recording");
-        status.innerText = "Коснитесь для записи";
+        status.innerText = "Коснитесь для новой записи";
         if (e.error !== "no-speech" && e.error !== "aborted") {
           showToast("Ошибка микрофона: " + e.error);
         }
       };
 
       recognition.onend = () => {
-        clearTimeout(silenceTimer);
-        isRecording = false;
-        document.body.classList.remove("recording");
-        status.innerText = "Коснитесь для записи";
-
-        const finalToSend = currentTranscript;
-        currentTranscript = "";
-        killRecognition();
-
-        if (finalToSend) {
-          sendTransaction(finalToSend);
+        // Если сессия завершилась сама, но запись не была отправлена вручную
+        if (isRecording) {
+          isRecording = false;
+          document.body.classList.remove("recording");
+          status.innerText = "Коснитесь для новой записи";
+          if (currentTranscript) {
+            sendTransaction(currentTranscript);
+          }
         }
       };
 
@@ -346,12 +331,24 @@
 
     voiceBox.addEventListener("click", () => {
       if (isRecording) {
-        clearTimeout(silenceTimer);
-        killRecognition();
+        // Пользователь нажал кнопку повторно для остановки и отправки
         isRecording = false;
+        if (recognition) {
+          try { recognition.stop(); } catch (e) {}
+        }
         document.body.classList.remove("recording");
-        status.innerText = "Коснитесь для записи";
+        
+        const finalToSend = currentTranscript;
+        currentTranscript = "";
+        killRecognition();
+
+        if (finalToSend) {
+          sendTransaction(finalToSend);
+        } else {
+          status.innerText = "Коснитесь для новой записи";
+        }
       } else {
+        // Запуск записи
         startListening();
       }
     });
@@ -400,12 +397,12 @@
           const tx = data.transaction;
           const msg = `✓ ${tx.amount} ${tx.currency} — ${tx.category}`;
 
-          // Мгновенная перезагрузка страницы для сброса аудиосессии iOS
+          // Перезагрузка страницы с очисткой аудиосессии iOS
           sessionStorage.setItem("joymne_toast", msg);
           window.location.replace(window.location.pathname + "?t=" + Date.now());
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
-          status.innerText = "Коснитесь для записи";
+          status.innerText = "Коснитесь для новой записи";
         }
       } catch (err) {
         showToast("Ошибка соединения");
