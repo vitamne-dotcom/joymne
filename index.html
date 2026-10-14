@@ -42,12 +42,13 @@
       justify-content: space-between;
       align-items: center;
       padding: max(20px, env(safe-area-inset-top) + 10px) 20px max(20px, env(safe-area-inset-bottom)) 20px;
+      transition: height 0.15s ease-out;
     }
 
     .top-bar {
       width: 100%;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
     }
 
@@ -59,101 +60,97 @@
       text-transform: lowercase;
     }
 
-    .sheet-link {
-      color: #3b82f6;
-      text-decoration: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      background: rgba(59, 130, 246, 0.1);
-      padding: 5px 10px;
-      border-radius: 10px;
-      border: 1px solid rgba(59, 130, 246, 0.2);
-    }
-
-    .wallets-grid {
+    /* Нижняя панель управления */
+    .bottom-panel {
       width: 100%;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 10px 0;
-    }
-
-    .wallet-card {
-      background: #181b20;
-      border: 1px solid #2a2e37;
-      border-radius: 14px;
-      padding: 10px;
+      max-width: 400px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 12px;
+      margin-top: auto;
+    }
+
+    /* Ряд 1: Транзит и Долги (2 круга) */
+    .actions-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .action-circle-btn {
+      background: #181b20;
+      border: 2px solid #2a2e37;
+      border-radius: 20px;
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
       text-align: center;
     }
 
-    .wallet-name {
-      font-size: 0.75rem;
-      color: #9ca3af;
-      font-weight: 500;
+    .action-circle-btn:active {
+      transform: scale(0.96);
+      border-color: #3b82f6;
     }
 
-    .wallet-balance {
+    .action-title {
       font-size: 1rem;
       font-weight: 700;
       color: #fff;
     }
 
-    .action-section {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: auto;
-      margin-top: auto;
-    }
-
-    .section-title {
-      font-size: 0.9rem;
+    .action-sub {
+      font-size: 0.8rem;
       color: #9ca3af;
-      text-align: center;
-      font-weight: 500;
+      margin-top: 2px;
     }
 
-    .buttons-grid {
+    /* Ряд 2: 3 круглые кнопки касс (Мила, Банк, Нал) */
+    .wallets-row {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
 
-    .cash-btn {
+    .wallet-circle-btn {
       background: #181b20;
       border: 2px solid #2a2e37;
-      color: #fff;
-      padding: 16px;
-      border-radius: 16px;
-      font-size: 1rem;
-      font-weight: 600;
+      border-radius: 24px;
+      padding: 16px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      transition: all 0.2s ease;
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
       text-align: center;
+      min-height: 85px;
     }
 
-    .cash-btn:active {
+    .wallet-circle-btn:active {
       transform: scale(0.96);
       border-color: #3b82f6;
     }
 
-    .cash-btn.transit {
-      grid-column: span 2;
-      border-color: #3b82f6;
-      background: rgba(59, 130, 246, 0.1);
+    .wallet-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
     }
 
-    .cash-btn.debt {
-      grid-column: span 2;
-      border-color: #f59e0b;
-      background: rgba(245, 158, 11, 0.1);
+    .wallet-amount {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #3b82f6;
+      margin-top: 4px;
     }
 
+    /* Модальное окно ввода */
     .input-box {
       width: 100%;
       background: #181b20;
@@ -258,48 +255,68 @@
   <div class="app-container" id="appContainer">
     <div class="top-bar">
       <header>joymne</header>
-      <a href="https://docs.google.com/spreadsheets/d/1CV7tLiYPKjXMrVszVIZI4bh5W0Ai3LpZfTyJVn4-8sY/edit" target="_blank" class="sheet-link" id="sheetLink">Таблица ↗</a>
     </div>
 
-    <!-- Остатки касс -->
-    <div class="wallets-grid" id="walletsGrid">
-      <div class="wallet-card"><div class="wallet-name">Мила</div><div class="wallet-balance" id="bal-mila">...</div></div>
-      <div class="wallet-card"><div class="wallet-name">Банк</div><div class="wallet-balance" id="bal-bank">...</div></div>
-      <div class="wallet-card"><div class="wallet-name">Нал</div><div class="wallet-balance" id="bal-nal">...</div></div>
+    <div style="margin: auto 0; text-align: center; color: #4b5563; font-size: 0.95rem;">
+      Выберите действие внизу 👇
     </div>
 
-    <!-- Кнопки выбора -->
-    <div class="action-section" id="actionSection">
-      <div class="section-title">Выберите кассу или действие:</div>
-      <div class="buttons-grid">
-        <button class="cash-btn" onclick="openInput('Мила')">Мила</button>
-        <button class="cash-btn" onclick="openInput('Банк')">Банк</button>
-        <button class="cash-btn" onclick="openInput('Нал')">Нал</button>
-        <button class="cash-btn transit" onclick="openInput('Транзит')">Транзит (перевод)</button>
-        <button class="cash-btn debt" onclick="openInput('Долги')">Долги (дать / вернуть)</button>
+    <!-- Нижняя панель с кнопками -->
+    <div class="bottom-panel" id="bottomPanel">
+      
+      <!-- Форма ввода (появляется при клике) -->
+      <div class="input-box" id="inputBox">
+        <div class="input-header">
+          <span id="selectedActionTitle">Ввод</span>
+          <button class="close-input" onclick="closeInput()">✕</button>
+        </div>
+        <div class="input-row">
+          <input type="text" id="txInput" placeholder="Текст или сумма (используйте 🎤)" autocomplete="off" />
+          <button id="sendBtn" onclick="submitTransaction()">ОК</button>
+        </div>
+        <label class="photo-btn">
+          📷 Сфотографировать чек
+          <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;" onchange="handlePhoto(this)" />
+        </label>
       </div>
-    </div>
 
-    <!-- Форма ввода -->
-    <div class="input-box" id="inputBox">
-      <div class="input-header">
-        <span id="selectedActionTitle">Ввод</span>
-        <button class="close-input" onclick="closeInput()">✕</button>
+      <!-- Кнопки действий и касс -->
+      <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Ряд 1: Транзит и Долги -->
+        <div class="actions-row">
+          <div class="action-circle-btn" onclick="openInput('Транзит')">
+            <div class="action-title">Транзит</div>
+            <div class="action-sub" id="sub-transit">перевод</div>
+          </div>
+          <div class="action-circle-btn" onclick="openInput('Долги')">
+            <div class="action-title">Долги</div>
+            <div class="action-sub" id="sub-debt">учет</div>
+          </div>
+        </div>
+
+        <!-- Ряд 2: Мила, Банк, Нал -->
+        <div class="wallets-row">
+          <div class="wallet-circle-btn" onclick="openInput('Мила')">
+            <div class="wallet-title">Мила</div>
+            <div class="wallet-amount" id="bal-mila">...</div>
+          </div>
+          <div class="wallet-circle-btn" onclick="openInput('Банк')">
+            <div class="wallet-title">Банк</div>
+            <div class="wallet-amount" id="bal-bank">...</div>
+          </div>
+          <div class="wallet-circle-btn" onclick="openInput('Нал')">
+            <div class="wallet-title">Нал</div>
+            <div class="wallet-amount" id="bal-nal">...</div>
+          </div>
+        </div>
       </div>
-      <div class="input-row">
-        <input type="text" id="txInput" placeholder="Текст или сумма..." autocomplete="off" />
-        <button id="sendBtn" onclick="submitTransaction()">ОК</button>
-      </div>
-      <label class="photo-btn">
-        📷 Сфотографировать чек
-        <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;" onchange="handlePhoto(this)" />
-      </label>
+
     </div>
   </div>
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "18.0";
+    const APP_VERSION = "20.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -308,91 +325,21 @@
 
     let activeCategory = "";
 
+    function updateViewport() {
+      if (window.visualViewport) {
+        document.getElementById("appContainer").style.height = window.visualViewport.height + "px";
+        window.scrollTo(0, 0);
+      }
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateViewport);
+      window.visualViewport.addEventListener("scroll", updateViewport);
+      updateViewport();
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
       loadBalances();
       const savedMsg = sessionStorage.getItem("joymne_toast");
       if (savedMsg) {
-        sessionStorage.removeItem("joymne_toast");
-        showToast(savedMsg);
-      }
-    });
-
-    async function loadBalances() {
-      try {
-        const res = await fetch(APPS_SCRIPT_URL + "?action=getBalances");
-        const data = await res.json();
-        if (data.status === "success") {
-          document.getElementById("bal-mila").innerText = (data.balances.Мила || 0) + " €";
-          document.getElementById("bal-bank").innerText = (data.balances.Банк || 0) + " €";
-          document.getElementById("bal-nal").innerText = (data.balances.Нал || 0) + " €";
-        }
-      } catch (e) {}
-    }
-
-    function openInput(category) {
-      activeCategory = category;
-      document.getElementById("selectedActionTitle").innerText = category === 'Транзит' ? 'Транзит (с Милы на Банк 100)' : (category === 'Долги' ? 'Долги (дал/вернул)' : 'Касса: ' + category);
-      document.getElementById("actionSection").style.display = "none";
-      document.getElementById("inputBox").classList.add("open");
-      
-      const input = document.getElementById("txInput");
-      input.value = "";
-      input.focus();
-    }
-
-    function closeInput() {
-      document.getElementById("inputBox").classList.remove("open");
-      document.getElementById("actionSection").style.display = "flex";
-    }
-
-    async function submitTransaction(photoBase64 = null) {
-      const text = document.getElementById("txInput").value.trim();
-      if (!text && !photoBase64) return;
-
-      closeInput();
-      showToast("Сохранение и анализ...");
-
-      try {
-        const response = await fetch(APPS_SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ category: activeCategory, text: text, photo: photoBase64 }),
-          redirect: "follow"
-        });
-
-        const data = await response.json();
-
-        if (data.status === "success") {
-          sessionStorage.setItem("joymne_toast", "✓ Сохранено успешно!");
-          window.location.replace(window.location.pathname + "?t=" + Date.now());
-        } else {
-          showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
-        }
-      } catch (err) {
-        showToast("Ошибка соединения");
-      }
-    }
-
-    function handlePhoto(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          submitTransaction(e.target.result);
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-
-    document.getElementById("txInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") submitTransaction();
-    });
-
-    function showToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.innerText = msg;
-      toast.classList.add("show");
-      setTimeout(() => { toast.classList.remove("show"); }, 3000);
-    }
-  </script>
-</body>
-</html>
+        sessionStorage.
