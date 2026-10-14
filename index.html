@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>joymne</title>
 
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -32,79 +34,80 @@
       inset: 0;
     }
 
+    /* Главный контейнер: прижимает всё к самому низу экрана */
     .app-container {
       position: relative;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end; /* По умолчанию в самом низу */
+      justify-content: flex-end;
       align-items: center;
       width: 100%;
       height: 100%;
-      padding: 24px 20px 60px 20px;
-      transition: height 0.25s ease, padding-bottom 0.25s ease;
+      padding: 20px 20px 55px 20px;
+      transition: padding-bottom 0.25s ease;
     }
 
-    /* Когда клавиатура открыта — центрируем в видимой области над ней */
+    /* Когда открыта клавиатура — поднимаем в центр над клавиатурой */
     body.listening .app-container {
       justify-content: center;
-      padding-bottom: 20px;
+      padding-bottom: 10px;
     }
 
     header {
       position: absolute;
       top: 28px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #6b7280;
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: #374151;
       text-transform: lowercase;
     }
 
-    .voice-trigger {
-      position: relative;
+    .floating-zone {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
       width: 100%;
-      padding: 10px 20px;
+      cursor: pointer;
     }
 
+    /* Парящий распознанный текст прямо на фоне без рамок */
     .preview {
-      margin-bottom: 18px;
-      font-size: 1.3rem;
+      margin-bottom: 28px;
+      font-size: 1.45rem;
       color: #ffffff;
       text-align: center;
-      min-height: 34px;
+      min-height: 36px;
       max-width: 90%;
       font-weight: 600;
       line-height: 1.35;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
     }
 
     .mic-btn {
       position: relative;
-      width: 120px;
-      height: 120px;
+      width: 118px;
+      height: 118px;
       border-radius: 50%;
-      background: #181b20;
+      background: #14171c;
       border: 3px solid #3b82f6;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 30px rgba(59, 130, 246, 0.35);
+      box-shadow: 0 0 35px rgba(59, 130, 246, 0.35);
       transition: all 0.25s ease;
     }
 
     .mic-btn svg {
-      width: 52px;
-      height: 52px;
+      width: 50px;
+      height: 50px;
       fill: #3b82f6;
       transition: fill 0.25s ease;
       pointer-events: none;
     }
 
-    /* Прозрачный инпут прямо поверх круглой кнопки, чтобы iOS не дергала экран вверх */
+    /* Невидимый инпут внутри самой круглой кнопки */
     #hiddenInput {
       position: absolute;
       inset: 0;
@@ -139,26 +142,29 @@
       fill: #10b981;
     }
 
+    /* Парящая подпись под кнопкой */
     .status {
       margin-top: 20px;
-      font-size: 1.05rem;
-      color: #9ca3af;
+      font-size: 1rem;
+      color: #6b7280;
       text-align: center;
       font-weight: 500;
     }
 
     .toast {
       position: fixed;
-      top: 20px;
+      top: 24px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
-      background: #181b20;
-      border: 1px solid #374151;
+      background: rgba(24, 27, 32, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid #2a2e37;
       color: #fff;
       padding: 12px 22px;
-      border-radius: 20px;
+      border-radius: 24px;
       font-size: 0.95rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       z-index: 999;
       text-align: center;
@@ -177,7 +183,7 @@
   <div class="app-container" id="appContainer">
     <header>joymne</header>
 
-    <label for="hiddenInput" class="voice-trigger" id="voiceBox">
+    <label for="hiddenInput" class="floating-zone">
       <div class="preview" id="preview"></div>
       <div class="mic-btn">
         <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" enterkeyhint="send" />
@@ -192,6 +198,13 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
+    const APP_VERSION = "3.0";
+
+    // Принудительный сброс старого кеша iOS PWA
+    if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
+      localStorage.setItem("joymne_ver", APP_VERSION);
+      window.location.replace(window.location.pathname + "?v=" + Date.now());
+    }
 
     const appContainer = document.getElementById("appContainer");
     const hiddenInput = document.getElementById("hiddenInput");
@@ -202,7 +215,6 @@
     let autoSendTimer = null;
     let isSending = false;
 
-    // Подстраиваем высоту контейнера точно под размер экрана над клавиатурой iOS
     function adjustViewport() {
       if (window.visualViewport) {
         appContainer.style.height = window.visualViewport.height + "px";
@@ -218,7 +230,7 @@
     hiddenInput.addEventListener("focus", () => {
       document.body.classList.remove("saved");
       document.body.classList.add("listening");
-      status.innerText = "Слушаю (нажмите 🎙️ внизу)...";
+      status.innerText = "Слушаю...";
       adjustViewport();
     });
 
@@ -241,7 +253,7 @@
           triggerSend();
         }, 1800);
       } else {
-        status.innerText = "Слушаю (нажмите 🎙️ внизу)...";
+        status.innerText = "Слушаю...";
       }
     });
 
@@ -289,11 +301,11 @@
             preview.innerText = "";
             if (document.activeElement === hiddenInput) {
               document.body.classList.add("listening");
-              status.innerText = "Слушаю (нажмите 🎙️ внизу)...";
+              status.innerText = "Слушаю...";
             } else {
               status.innerText = "Коснитесь для записи";
             }
-          }, 1800);
+          }, 1600);
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
           status.innerText = "Коснитесь для записи";
@@ -311,7 +323,7 @@
       toast.classList.add("show");
       setTimeout(() => {
         toast.classList.remove("show");
-      }, 3200);
+      }, 3000);
     }
   </script>
 </body>
