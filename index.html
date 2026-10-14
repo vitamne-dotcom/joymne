@@ -199,9 +199,9 @@
     </div>
 
     <footer>
-      <button class="manual-btn" id="toggleInput">Ввести вручную</button>
+      <button class="manual-btn" id="toggleInput">Ввести вручную / Диктовка</button>
       <div class="input-row" id="inputRow">
-        <input type="text" id="manualText" placeholder="например: такси 300 руб" />
+        <input type="text" id="manualText" placeholder="такси 300 руб" />
         <button id="sendBtn">ОК</button>
       </div>
     </footer>
@@ -220,30 +220,32 @@
     const toast = document.getElementById("toast");
 
     let isRecording = false;
-    let recognition = null;
     let currentTranscript = "";
     let silenceTimer = null;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    function startListening() {
-      if (!SpeechRecognition) {
-        showToast("Голосовой ввод не поддерживается");
-        return;
+    // Если после перезагрузки есть сообщение о сохранении — показываем его
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedMsg = sessionStorage.getItem("joymne_toast");
+      if (savedMsg) {
+        sessionStorage.removeItem("joymne_toast");
+        showToast(savedMsg);
       }
+    });
 
-      clearTimeout(silenceTimer);
-      currentTranscript = "";
-      preview.innerText = "";
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    // Создаем ЕДИНСТВЕННЫЙ экземпляр на всю сессию страницы
+    const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
-      // Создаем свежий объект синхронно внутри клика (требование iOS Safari)
-      recognition = new SpeechRecognition();
+    if (recognition) {
       recognition.lang = "ru-RU";
-      recognition.continuous = false; // Одиночная фраза — Safari сам чисто закрывает сессию
+      recognition.continuous = false;
       recognition.interimResults = true;
 
       recognition.onstart = () => {
         isRecording = true;
+        currentTranscript = "";
+        preview.innerText = "";
         document.body.classList.add("recording");
         status.innerText = "Слушаю...";
       };
@@ -256,11 +258,10 @@
         currentTranscript = text.trim();
         preview.innerText = currentTranscript;
 
-        // Если после слов наступила пауза 1.3 сек — мягко останавливаем запись
         clearTimeout(silenceTimer);
         if (currentTranscript) {
           silenceTimer = setTimeout(() => {
-            if (isRecording && recognition) {
+            if (isRecording) {
               try { recognition.stop(); } catch (err) {}
             }
           }, 1300);
@@ -272,9 +273,8 @@
         isRecording = false;
         document.body.classList.remove("recording");
         status.innerText = "Коснитесь для записи";
-
         if (e.error !== "no-speech" && e.error !== "aborted") {
-          showToast("Ошибка микрофона: " + e.error);
+          showToast("Ошибка: " + e.error);
         }
       };
 
@@ -284,33 +284,31 @@
         document.body.classList.remove("recording");
         status.innerText = "Коснитесь для записи";
 
-        const finalToSend = currentTranscript;
+        const textToSend = currentTranscript;
         currentTranscript = "";
-        recognition = null;
 
-        // Отправляем только после того, как iOS полностью закрыла аудиосессию
-        if (finalToSend) {
-          sendTransaction(finalToSend);
+        if (textToSend) {
+          sendTransaction(textToSend, true);
         }
       };
-
-      try {
-        recognition.start();
-      } catch (err) {
-        isRecording = false;
-        document.body.classList.remove("recording");
-        status.innerText = "Коснитесь для записи";
-      }
     }
 
     voiceBox.addEventListener("click", () => {
+      if (!recognition) {
+        showToast("Голосовой ввод не поддерживается");
+        return;
+      }
+
       if (isRecording) {
         clearTimeout(silenceTimer);
-        if (recognition) {
-          try { recognition.stop(); } catch (e) {}
-        }
+        try { recognition.stop(); } catch (e) {}
       } else {
-        startListening();
+        try {
+          recognition.start();
+        } catch (err) {
+          // Если движок iOS застрял — мгновенно сбрасываем страницу
+          window.location.reload();
+        }
       }
     });
 
@@ -320,17 +318,17 @@
         manualText.focus();
         toggleInput.innerText = "Скрыть";
       } else {
-        toggleInput.innerText = "Ввести вручную";
+        toggleInput.innerText = "Ввести вручную / Диктовка";
       }
     });
 
     sendBtn.addEventListener("click", () => {
       const val = manualText.value.trim();
       if (val) {
-        sendTransaction(val);
+        sendTransaction(val, false);
         manualText.value = "";
         inputRow.classList.remove("open");
-        toggleInput.innerText = "Ввести вручную";
+        toggleInput.innerText = "Ввести вручную / Диктовка";
       }
     });
 
@@ -338,7 +336,7 @@
       if (e.key === "Enter") sendBtn.click();
     });
 
-    async function sendTransaction(text) {
+    async function sendTransaction(text, fromVoice) {
       status.innerText = "Сохранение...";
       showToast("Записываем: " + text);
 
@@ -356,18 +354,26 @@
 
         if (data.status === "success") {
           const tx = data.transaction;
-          showToast(`✓ ${tx.amount} ${tx.currency} — ${tx.category}`);
-          status.innerText = "Сохранено!";
-          setTimeout(() => {
-            status.innerText = "Коснитесь для записи";
-            preview.innerText = "";
-          }, 2000);
+          const successMsg = `✓ ${tx.amount} ${tx.currency} — ${tx.category}`;
+
+          if (fromVoice) {
+            // Сохраняем уведомление и мгновенно обновляем аудиосессию iOS,
+            // чтобы следующая голосовая запись сработала со 100% гарантией
+            sessionStorage.setItem("joymne_toast", successMsg);
+            window.location.reload();
+          } else {
+            showToast(successMsg);
+            status.innerText = "Сохранено!";
+            setTimeout(() => {
+              status.innerText = "Коснитесь для записи";
+              preview.innerText = "";
+            }, 2000);
+          }
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
           status.innerText = "Коснитесь для записи";
         }
       } catch (err) {
-        console.error("Fetch error:", err);
         showToast("Ошибка соединения");
         status.innerText = "Коснитесь для записи";
       }
