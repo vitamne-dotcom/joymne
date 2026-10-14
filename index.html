@@ -17,8 +17,6 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      -webkit-user-select: none;
     }
 
     html, body {
@@ -27,16 +25,18 @@
       background: #0d0f12;
       color: #f3f4f6;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      overflow: hidden;
+      cursor: pointer;
     }
 
     .app-container {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
-      min-height: 100vh;
-      min-height: -webkit-fill-available;
-      padding: 40px 20px 30px 20px;
+      height: 100%;
+      padding: 40px 20px 20px 20px;
+      gap: 24px;
     }
 
     header {
@@ -47,119 +47,108 @@
       text-transform: lowercase;
     }
 
-    .voice-box {
+    .voice-card {
+      width: 100%;
+      max-width: 380px;
+      background: #181b20;
+      border: 2px solid #2a2e37;
+      border-radius: 24px;
+      padding: 24px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      width: 100%;
+      transition: all 0.25s ease;
+    }
+
+    .voice-card.active {
+      border-color: #10b981;
+      box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);
     }
 
     .mic-btn {
-      width: 130px;
-      height: 130px;
+      width: 84px;
+      height: 84px;
       border-radius: 50%;
-      background: #181b20;
+      background: #0d0f12;
       border: 3px solid #3b82f6;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
       transition: all 0.25s ease;
+      margin-bottom: 14px;
     }
 
     .mic-btn svg {
-      width: 56px;
-      height: 56px;
+      width: 38px;
+      height: 38px;
       fill: #3b82f6;
       transition: fill 0.2s ease;
     }
 
-    body.recording .mic-btn {
-      border-color: #ef4444;
-      box-shadow: 0 0 50px rgba(239, 68, 68, 0.6);
-      transform: scale(1.06);
+    .voice-card.active .mic-btn {
+      border-color: #10b981;
+      box-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
+      transform: scale(1.05);
     }
 
-    body.recording .mic-btn svg {
-      fill: #ef4444;
+    .voice-card.active .mic-btn svg {
+      fill: #10b981;
     }
 
     .status {
-      margin-top: 24px;
-      font-size: 1.15rem;
+      font-size: 1rem;
       color: #9ca3af;
       text-align: center;
       font-weight: 500;
+      margin-bottom: 14px;
     }
 
-    .preview {
-      margin-top: 12px;
-      font-size: 1.15rem;
-      color: #fff;
-      text-align: center;
-      min-height: 28px;
-      max-width: 90%;
-      font-weight: 600;
-    }
-
-    footer {
+    .dictation-input {
       width: 100%;
-      max-width: 360px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .manual-btn {
-      background: none;
-      border: none;
-      color: #3b82f6;
-      font-size: 0.95rem;
-      font-weight: 600;
-      padding: 10px;
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .input-row {
-      display: none;
-      gap: 8px;
-      background: #181b20;
+      background: #0d0f12;
       border: 1px solid #2a2e37;
       border-radius: 14px;
-      padding: 6px 8px 6px 14px;
-    }
-
-    .input-row.open {
-      display: flex;
-    }
-
-    .input-row input {
-      flex: 1;
-      background: transparent;
-      border: none;
+      padding: 14px 16px;
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 600;
+      text-align: center;
       outline: none;
-      color: #fff;
-      font-size: 1rem;
-      user-select: text;
-      -webkit-user-select: text;
+      transition: border-color 0.2s;
     }
 
-    .input-row button {
-      background: #3b82f6;
-      border: none;
+    .dictation-input:focus {
+      border-color: #10b981;
+    }
+
+    .dictation-input::placeholder {
+      color: #6b7280;
+      font-weight: 400;
+      font-size: 0.95rem;
+    }
+
+    .send-now-btn {
+      margin-top: 14px;
+      width: 100%;
+      background: #10b981;
       color: #fff;
-      border-radius: 10px;
-      padding: 8px 16px;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 1.05rem;
       font-weight: 600;
       cursor: pointer;
+      display: none;
+    }
+
+    .send-now-btn.visible {
+      display: block;
     }
 
     .toast {
       position: fixed;
-      top: 20px;
+      top: 16px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
       background: #181b20;
@@ -184,159 +173,117 @@
 
   <div id="toast" class="toast"></div>
 
-  <div class="app-container">
+  <div class="app-container" id="appContainer">
     <header>joymne</header>
 
-    <div class="voice-box" id="voiceBox">
+    <div class="voice-card" id="voiceCard">
       <div class="mic-btn">
         <svg viewBox="0 0 24 24">
           <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
           <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
         </svg>
       </div>
-      <div class="status" id="status">Коснитесь для записи</div>
-      <div class="preview" id="preview"></div>
+      <div class="status" id="status">Коснитесь любого места экрана 👇</div>
+      <input 
+        type="text" 
+        id="dictationInput" 
+        class="dictation-input" 
+        placeholder="Нажмите 🎙️ на клавиатуре" 
+        autocomplete="off"
+        autofocus
+        enterkeyhint="send"
+      />
+      <button id="sendNowBtn" class="send-now-btn">Отправить сейчас</button>
     </div>
-
-    <footer>
-      <button class="manual-btn" id="toggleInput">Ввести вручную / Диктовка</button>
-      <div class="input-row" id="inputRow">
-        <input type="text" id="manualText" placeholder="такси 300 руб" />
-        <button id="sendBtn">ОК</button>
-      </div>
-    </footer>
   </div>
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
 
-    const voiceBox = document.getElementById("voiceBox");
+    const voiceCard = document.getElementById("voiceCard");
     const status = document.getElementById("status");
-    const preview = document.getElementById("preview");
-    const toggleInput = document.getElementById("toggleInput");
-    const inputRow = document.getElementById("inputRow");
-    const manualText = document.getElementById("manualText");
-    const sendBtn = document.getElementById("sendBtn");
+    const dictationInput = document.getElementById("dictationInput");
+    const sendNowBtn = document.getElementById("sendNowBtn");
     const toast = document.getElementById("toast");
 
-    let isRecording = false;
-    let currentTranscript = "";
-    let silenceTimer = null;
+    let autoSendTimer = null;
+    let isSending = false;
 
-    // Если после перезагрузки есть сообщение о сохранении — показываем его
-    window.addEventListener("DOMContentLoaded", () => {
-      const savedMsg = sessionStorage.getItem("joymne_toast");
-      if (savedMsg) {
-        sessionStorage.removeItem("joymne_toast");
-        showToast(savedMsg);
+    // Пробуем открыть сразу (сработает на десктопе/Android)
+    window.addEventListener("load", () => {
+      dictationInput.focus();
+    });
+
+    // На iOS любое первое касание в любую точку экрана мгновенно поднимает клавиатуру
+    document.body.addEventListener("touchstart", (e) => {
+      if (e.target !== sendNowBtn && document.activeElement !== dictationInput) {
+        dictationInput.focus();
+      }
+    }, { passive: true });
+
+    document.body.addEventListener("click", (e) => {
+      if (e.target !== sendNowBtn) {
+        dictationInput.focus();
       }
     });
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    // Создаем ЕДИНСТВЕННЫЙ экземпляр на всю сессию страницы
-    const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+    dictationInput.addEventListener("focus", () => {
+      voiceCard.classList.add("active");
+      status.innerText = "Нажмите 🎙️ внизу клавиатуры и говорите";
+    });
 
-    if (recognition) {
-      recognition.lang = "ru-RU";
-      recognition.continuous = false;
-      recognition.interimResults = true;
+    dictationInput.addEventListener("blur", () => {
+      voiceCard.classList.remove("active");
+      if (!dictationInput.value.trim()) {
+        status.innerText = "Коснитесь любого места экрана 👇";
+      }
+    });
 
-      recognition.onstart = () => {
-        isRecording = true;
-        currentTranscript = "";
-        preview.innerText = "";
-        document.body.classList.add("recording");
-        status.innerText = "Слушаю...";
-      };
+    // Автоматическая отправка после паузы в речи
+    dictationInput.addEventListener("input", () => {
+      const val = dictationInput.value.trim();
+      clearTimeout(autoSendTimer);
 
-      recognition.onresult = (e) => {
-        let text = "";
-        for (let i = 0; i < e.results.length; ++i) {
-          text += e.results[i][0].transcript;
-        }
-        currentTranscript = text.trim();
-        preview.innerText = currentTranscript;
+      if (val.length > 0) {
+        sendNowBtn.classList.add("visible");
+        status.innerText = "Авто-сохранение через 2 сек...";
 
-        clearTimeout(silenceTimer);
-        if (currentTranscript) {
-          silenceTimer = setTimeout(() => {
-            if (isRecording) {
-              try { recognition.stop(); } catch (err) {}
-            }
-          }, 1300);
-        }
-      };
+        autoSendTimer = setTimeout(() => {
+          triggerSend();
+        }, 2000);
+      } else {
+        sendNowBtn.classList.remove("visible");
+        status.innerText = "Нажмите 🎙️ внизу клавиатуры и говорите";
+      }
+    });
 
-      recognition.onerror = (e) => {
-        clearTimeout(silenceTimer);
-        isRecording = false;
-        document.body.classList.remove("recording");
-        status.innerText = "Коснитесь для записи";
-        if (e.error !== "no-speech" && e.error !== "aborted") {
-          showToast("Ошибка: " + e.error);
-        }
-      };
+    dictationInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        clearTimeout(autoSendTimer);
+        triggerSend();
+      }
+    });
 
-      recognition.onend = () => {
-        clearTimeout(silenceTimer);
-        isRecording = false;
-        document.body.classList.remove("recording");
-        status.innerText = "Коснитесь для записи";
+    sendNowBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      clearTimeout(autoSendTimer);
+      triggerSend();
+    });
 
-        const textToSend = currentTranscript;
-        currentTranscript = "";
+    function triggerSend() {
+      const text = dictationInput.value.trim();
+      if (!text || isSending) return;
 
-        if (textToSend) {
-          sendTransaction(textToSend, true);
-        }
-      };
+      // Очищаем поле, но НЕ закрываем клавиатуру (фокус остается!)
+      dictationInput.value = "";
+      sendNowBtn.classList.remove("visible");
+      dictationInput.focus();
+      sendTransaction(text);
     }
 
-    voiceBox.addEventListener("click", () => {
-      if (!recognition) {
-        showToast("Голосовой ввод не поддерживается");
-        return;
-      }
-
-      if (isRecording) {
-        clearTimeout(silenceTimer);
-        try { recognition.stop(); } catch (e) {}
-      } else {
-        try {
-          recognition.start();
-        } catch (err) {
-          // Если движок iOS застрял — мгновенно сбрасываем страницу
-          window.location.reload();
-        }
-      }
-    });
-
-    toggleInput.addEventListener("click", () => {
-      inputRow.classList.toggle("open");
-      if (inputRow.classList.contains("open")) {
-        manualText.focus();
-        toggleInput.innerText = "Скрыть";
-      } else {
-        toggleInput.innerText = "Ввести вручную / Диктовка";
-      }
-    });
-
-    sendBtn.addEventListener("click", () => {
-      const val = manualText.value.trim();
-      if (val) {
-        sendTransaction(val, false);
-        manualText.value = "";
-        inputRow.classList.remove("open");
-        toggleInput.innerText = "Ввести вручную / Диктовка";
-      }
-    });
-
-    manualText.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") sendBtn.click();
-    });
-
-    async function sendTransaction(text, fromVoice) {
+    async function sendTransaction(text) {
+      isSending = true;
       status.innerText = "Сохранение...";
       showToast("Записываем: " + text);
 
@@ -354,28 +301,18 @@
 
         if (data.status === "success") {
           const tx = data.transaction;
-          const successMsg = `✓ ${tx.amount} ${tx.currency} — ${tx.category}`;
-
-          if (fromVoice) {
-            // Сохраняем уведомление и мгновенно обновляем аудиосессию iOS,
-            // чтобы следующая голосовая запись сработала со 100% гарантией
-            sessionStorage.setItem("joymne_toast", successMsg);
-            window.location.reload();
-          } else {
-            showToast(successMsg);
-            status.innerText = "Сохранено!";
-            setTimeout(() => {
-              status.innerText = "Коснитесь для записи";
-              preview.innerText = "";
-            }, 2000);
-          }
+          showToast(`✓ ${tx.amount} ${tx.currency} — ${tx.category}`);
+          status.innerText = "Сохранено! Говорите следующую запись 🎙️";
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
-          status.innerText = "Коснитесь для записи";
+          status.innerText = "Попробуйте еще раз";
         }
       } catch (err) {
+        console.error("Fetch error:", err);
         showToast("Ошибка соединения");
-        status.innerText = "Коснитесь для записи";
+        status.innerText = "Попробуйте еще раз";
+      } finally {
+        isSending = false;
       }
     }
 
