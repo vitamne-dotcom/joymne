@@ -96,11 +96,12 @@
 
     .preview {
       margin-top: 12px;
-      font-size: 1.05rem;
+      font-size: 1.15rem;
       color: #fff;
       text-align: center;
-      min-height: 24px;
+      min-height: 28px;
       max-width: 90%;
+      font-weight: 600;
     }
 
     footer {
@@ -207,7 +208,6 @@
   </div>
 
   <script>
-    // Актуальный URL развертывания Google Apps Script
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
 
     const voiceBox = document.getElementById("voiceBox");
@@ -221,68 +221,119 @@
 
     let isRecording = false;
     let recognition = null;
-    let finalTranscript = "";
+    let lastRecognizedText = "";
+    let silenceTimer = null;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (SpeechRecognition) {
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = "ru-RU";
+    function initRecognition() {
+      if (!SpeechRecognition) return null;
 
-      recognition.onstart = () => {
+      // Уничтожаем старый инстанс перед созданием нового
+      if (recognition) {
+        try { recognition.abort(); } catch (e) {}
+      }
+
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = "ru-RU";
+
+      rec.onstart = () => {
         isRecording = true;
         document.body.classList.add("recording");
         status.innerText = "Слушаю...";
         preview.innerText = "";
-        finalTranscript = "";
+        lastRecognizedText = "";
       };
 
-      recognition.onresult = (e) => {
-        let interim = "";
-        for (let i = e.resultIndex; i < e.results.length; ++i) {
-          if (e.results[i].isFinal) {
-            finalTranscript += e.results[i][0].transcript;
-          } else {
-            interim += e.results[i][0].transcript;
-          }
+      rec.onresult = (e) => {
+        let text = "";
+        for (let i = 0; i < e.results.length; ++i) {
+          text += e.results[i][0].transcript;
         }
-        preview.innerText = finalTranscript || interim;
-      };
 
-      recognition.onerror = (e) => {
-        stopRecording();
-        showToast("Ошибка микрофона: " + e.error);
-      };
+        if (text.trim()) {
+          lastRecognizedText = text.trim();
+          preview.innerText = lastRecognizedText;
 
-      recognition.onend = () => {
-        stopRecording();
-        if (finalTranscript.trim()) {
-          sendTransaction(finalTranscript.trim());
+          // Таймер тишины: 1.5 секунды молчания — завершаем и отправляем
+          clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            if (isRecording) {
+              stopRecordingAndSend();
+            }
+          }, 1500);
         }
       };
-    } else {
-      status.innerText = "Голос не поддерживается";
+
+      rec.onerror = (e) => {
+        console.warn("Speech error:", e.error);
+        // "aborted" и "no-speech" — штатные системные события iOS, не спамим ошибками
+        if (e.error !== "no-speech" && e.error !== "aborted") {
+          showToast("Ошибка микрофона: " + e.error);
+        }
+        cleanupState();
+      };
+
+      rec.onend = () => {
+        if (isRecording) {
+          stopRecordingAndSend();
+        } else {
+          cleanupState();
+        }
+      };
+
+      return rec;
     }
 
     function startRecording() {
-      if (!recognition) return;
-      try { recognition.start(); } catch (e) {}
+      if (!SpeechRecognition) {
+        showToast("Голосовой ввод не поддерживается");
+        return;
+      }
+      
+      cleanupState();
+      recognition = initRecognition();
+      
+      try {
+        recognition.start();
+      } catch (err) {
+        console.warn("Start error:", err);
+      }
     }
 
-    function stopRecording() {
+    function cleanupState() {
       isRecording = false;
+      clearTimeout(silenceTimer);
       document.body.classList.remove("recording");
       status.innerText = "Коснитесь для записи";
+    }
+
+    function stopRecordingAndSend() {
+      const textToSend = lastRecognizedText;
+      
+      isRecording = false;
+      clearTimeout(silenceTimer);
+      document.body.classList.remove("recording");
+      status.innerText = "Коснитесь для записи";
+
       if (recognition) {
         try { recognition.stop(); } catch (e) {}
+      }
+
+      if (textToSend && textToSend.length > 0) {
+        sendTransaction(textToSend);
       }
     }
 
     voiceBox.addEventListener("click", () => {
-      if (isRecording) stopRecording();
-      else startRecording();
+      if (isRecording) {
+        // Повторный клик сразу останавливает и отправляет
+        stopRecordingAndSend();
+      } else {
+        startRecording();
+      }
     });
 
     toggleInput.addEventListener("click", () => {
@@ -310,8 +361,8 @@
     });
 
     async function sendTransaction(text) {
-      status.innerText = "Обработка Gemini...";
-      showToast("Распознаем транзакцию...");
+      status.innerText = "Сохранение...";
+      showToast("Записываем: " + text);
 
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
@@ -332,14 +383,14 @@
           setTimeout(() => {
             status.innerText = "Коснитесь для записи";
             preview.innerText = "";
-          }, 2500);
+          }, 2000);
         } else {
-          showToast("Ошибка: " + (data.message || "Не удалось обработать"));
+          showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
           status.innerText = "Коснитесь для записи";
         }
       } catch (err) {
         console.error("Fetch error:", err);
-        showToast("Ошибка соединения: " + err.message);
+        showToast("Ошибка соединения");
         status.innerText = "Коснитесь для записи";
       }
     }
