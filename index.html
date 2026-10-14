@@ -229,11 +229,11 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "13.0";
+    const APP_VERSION = "14.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
-      window.location.replace(window.location.pathname + "?v=" + Date.now());
+      window.location.href = window.location.pathname + "?v=" + Date.now();
     }
 
     const appContainer = document.getElementById("appContainer");
@@ -250,7 +250,6 @@
     let recognition = null;
     let currentTranscript = "";
 
-    // Адаптация под виртуальную клавиатуру iOS
     function updateViewport() {
       if (window.visualViewport) {
         appContainer.style.height = window.visualViewport.height + "px";
@@ -350,7 +349,7 @@
         recognition.start();
       } catch (err) {
         killRecognition();
-        window.location.replace(window.location.pathname + "?t=" + Date.now());
+        window.location.href = window.location.pathname + "?t=" + Date.now();
       }
     }
 
@@ -425,7 +424,7 @@
           sessionStorage.setItem("joymne_toast", msg);
 
           setTimeout(() => {
-            window.location.replace(window.location.pathname + "?t=" + Date.now());
+            window.location.href = window.location.pathname + "?reload=" + Date.now();
           }, 400);
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
