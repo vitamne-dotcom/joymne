@@ -52,7 +52,6 @@
     }
 
     .voice-box {
-      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -76,7 +75,6 @@
     }
 
     .mic-btn {
-      position: relative;
       width: 120px;
       height: 120px;
       border-radius: 50%;
@@ -93,33 +91,17 @@
       width: 52px;
       height: 52px;
       fill: #3b82f6;
-      transition: fill 0.2s ease;
+      transition: fill 0.25s ease;
       pointer-events: none;
     }
 
-    /* Скрытый инпут прямо поверх круглой кнопки для бесперебойной диктовки iOS */
-    #hiddenInput {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      border: none;
-      outline: none;
-      background: transparent;
-      color: transparent;
-      caret-color: transparent;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    body.listening .mic-btn {
+    body.recording .mic-btn {
       border-color: #ef4444;
       box-shadow: 0 0 50px rgba(239, 68, 68, 0.6);
       transform: scale(1.05);
     }
 
-    body.listening .mic-btn svg {
+    body.recording .mic-btn svg {
       fill: #ef4444;
     }
 
@@ -226,7 +208,6 @@
     <div class="voice-box" id="voiceBox">
       <div class="preview" id="preview"></div>
       <div class="mic-btn">
-        <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" enterkeyhint="send" />
         <svg viewBox="0 0 24 24">
           <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
           <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
@@ -246,14 +227,14 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "6.0";
+    const APP_VERSION = "8.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
       window.location.replace(window.location.pathname + "?v=" + Date.now());
     }
 
-    const hiddenInput = document.getElementById("hiddenInput");
+    const voiceBox = document.getElementById("voiceBox");
     const status = document.getElementById("status");
     const preview = document.getElementById("preview");
     const toggleInput = document.getElementById("toggleInput");
@@ -262,8 +243,10 @@
     const sendBtn = document.getElementById("sendBtn");
     const toast = document.getElementById("toast");
 
-    let autoSendTimer = null;
-    let isSending = false;
+    let isRecording = false;
+    let recognition = null;
+    let currentTranscript = "";
+    let silenceTimer = null;
 
     window.addEventListener("DOMContentLoaded", () => {
       const savedMsg = sessionStorage.getItem("joymne_toast");
@@ -279,39 +262,103 @@
       }
     });
 
-    hiddenInput.addEventListener("focus", () => {
-      document.body.classList.remove("saved");
-      document.body.classList.add("listening");
-      status.innerText = "Говорите (нажмите 🎙️ внизу)...";
-    });
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    hiddenInput.addEventListener("blur", () => {
-      document.body.classList.remove("listening");
-      if (!hiddenInput.value.trim() && !isSending) {
+    function killRecognition() {
+      if (recognition) {
+        recognition.onstart = null;
+        recognition.onresult = null;
+        recognition.onerror = null;
+        recognition.onend = null;
+        try { recognition.abort(); } catch (e) {}
+        recognition = null;
+      }
+    }
+
+    function startListening() {
+      if (!SpeechRecognition) {
+        showToast("Голосовой ввод не поддерживается");
+        return;
+      }
+
+      killRecognition();
+      clearTimeout(silenceTimer);
+      currentTranscript = "";
+      preview.innerText = "";
+
+      recognition = new SpeechRecognition();
+      recognition.lang = "ru-RU";
+      recognition.continuous = false;
+      recognition.interimResults = true;
+
+      recognition.onstart = () => {
+        isRecording = true;
+        document.body.classList.remove("saved");
+        document.body.classList.add("recording");
+        status.innerText = "Слушаю...";
+      };
+
+      recognition.onresult = (e) => {
+        let text = "";
+        for (let i = 0; i < e.results.length; ++i) {
+          text += e.results[i][0].transcript;
+        }
+        currentTranscript = text.trim();
+        preview.innerText = currentTranscript;
+
+        clearTimeout(silenceTimer);
+        if (currentTranscript) {
+          silenceTimer = setTimeout(() => {
+            if (isRecording && recognition) {
+              try { recognition.stop(); } catch (err) {}
+            }
+          }, 1400);
+        }
+      };
+
+      recognition.onerror = (e) => {
+        clearTimeout(silenceTimer);
+        isRecording = false;
+        killRecognition();
+        document.body.classList.remove("recording");
         status.innerText = "Коснитесь для записи";
+        if (e.error !== "no-speech" && e.error !== "aborted") {
+          showToast("Ошибка микрофона: " + e.error);
+        }
+      };
+
+      recognition.onend = () => {
+        clearTimeout(silenceTimer);
+        isRecording = false;
+        document.body.classList.remove("recording");
+        status.innerText = "Коснитесь для записи";
+
+        const finalToSend = currentTranscript;
+        currentTranscript = "";
+        killRecognition();
+
+        if (finalToSend) {
+          sendTransaction(finalToSend);
+        }
+      };
+
+      try {
+        recognition.start();
+      } catch (err) {
+        killRecognition();
+        window.location.replace(window.location.pathname + "?t=" + Date.now());
       }
-    });
+    }
 
-    hiddenInput.addEventListener("input", () => {
-      const val = hiddenInput.value.trim();
-      preview.innerText = val;
-      clearTimeout(autoSendTimer);
-
-      if (val.length > 0) {
-        status.innerText = "Запись распознана...";
-        autoSendTimer = setTimeout(() => {
-          triggerSend();
-        }, 1500);
+    voiceBox.addEventListener("click", () => {
+      if (isRecording) {
+        clearTimeout(silenceTimer);
+        killRecognition();
+        isRecording = false;
+        document.body.classList.remove("recording");
+        status.innerText = "Коснитесь для записи";
       } else {
-        status.innerText = "Говорите (нажмите 🎙️ внизу)...";
-      }
-    });
-
-    hiddenInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        clearTimeout(autoSendTimer);
-        triggerSend();
+        startListening();
       }
     });
 
@@ -339,19 +386,9 @@
       if (e.key === "Enter") sendBtn.click();
     });
 
-    function triggerSend() {
-      const text = hiddenInput.value.trim();
-      if (!text || isSending) return;
-
-      hiddenInput.value = "";
-      preview.innerText = "";
-      sendTransaction(text);
-    }
-
     async function sendTransaction(text) {
-      isSending = true;
-      document.body.classList.remove("listening");
       status.innerText = "Сохранение...";
+      showToast("Записываем: " + text);
 
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
@@ -374,12 +411,10 @@
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
           status.innerText = "Коснитесь для записи";
-          isSending = false;
         }
       } catch (err) {
         showToast("Ошибка соединения");
         status.innerText = "Коснитесь для записи";
-        isSending = false;
       }
     }
 
