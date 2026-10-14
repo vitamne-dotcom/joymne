@@ -37,11 +37,12 @@
       top: 0;
       left: 0;
       width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: max(20px, env(safe-area-inset-top) + 10px) 20px max(20px, env(safe-area-inset-bottom)) 20px;
+      padding: max(20px, env(safe-area-inset-top) + 10px) 16px max(24px, env(safe-area-inset-bottom)) 16px;
       transition: height 0.15s ease-out;
     }
 
@@ -60,7 +61,7 @@
       text-transform: lowercase;
     }
 
-    /* Нижняя панель управления */
+    /* Нижняя панель */
     .bottom-panel {
       width: 100%;
       max-width: 400px;
@@ -70,31 +71,33 @@
       margin-top: auto;
     }
 
-    /* Ряд 1: Транзит и Долги (2 круга) */
+    /* Ряд 1: Транзит и Долги (отцентрованы, круглые/овальные) */
     .actions-row {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      display: flex;
+      justify-content: center;
       gap: 12px;
+      width: 100%;
     }
 
     .action-circle-btn {
       background: #181b20;
-      border: 2px solid #2a2e37;
-      border-radius: 20px;
+      border: 2px solid #3b82f6;
+      border-radius: 35px;
+      width: 48%;
       padding: 14px 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.2);
       transition: all 0.2s ease;
       text-align: center;
     }
 
     .action-circle-btn:active {
-      transform: scale(0.96);
-      border-color: #3b82f6;
+      transform: scale(0.95);
+      background: rgba(59, 130, 246, 0.15);
     }
 
     .action-title {
@@ -104,7 +107,7 @@
     }
 
     .action-sub {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: #9ca3af;
       margin-top: 2px;
     }
@@ -119,21 +122,21 @@
     .wallet-circle-btn {
       background: #181b20;
       border: 2px solid #2a2e37;
-      border-radius: 24px;
-      padding: 16px 8px;
+      border-radius: 40px;
+      padding: 16px 6px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
       transition: all 0.2s ease;
       text-align: center;
-      min-height: 85px;
+      min-height: 90px;
     }
 
     .wallet-circle-btn:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
       border-color: #3b82f6;
     }
 
@@ -155,12 +158,12 @@
       width: 100%;
       background: #181b20;
       border: 1px solid #3b82f6;
-      border-radius: 18px;
+      border-radius: 24px;
       padding: 16px;
       display: none;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
 
     .input-box.open {
@@ -194,7 +197,7 @@
       flex: 1;
       background: #0d0f12;
       border: 1px solid #2a2e37;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 12px 14px;
       color: #fff;
       font-size: 1rem;
@@ -207,8 +210,8 @@
       background: #3b82f6;
       border: none;
       color: #fff;
-      border-radius: 12px;
-      padding: 0 16px;
+      border-radius: 14px;
+      padding: 0 18px;
       font-weight: 600;
       cursor: pointer;
     }
@@ -217,7 +220,7 @@
       background: #2a2e37;
       border: none;
       color: #fff;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 12px;
       font-weight: 600;
       cursor: pointer;
@@ -264,7 +267,7 @@
     <!-- Нижняя панель с кнопками -->
     <div class="bottom-panel" id="bottomPanel">
       
-      <!-- Форма ввода (появляется при клике) -->
+      <!-- Форма ввода -->
       <div class="input-box" id="inputBox">
         <div class="input-header">
           <span id="selectedActionTitle">Ввод</span>
@@ -282,64 +285,17 @@
 
       <!-- Кнопки действий и касс -->
       <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 10px;">
-        <!-- Ряд 1: Транзит и Долги -->
+        <!-- Ряд 1: Транзит и Долги (отцентрованы) -->
         <div class="actions-row">
           <div class="action-circle-btn" onclick="openInput('Транзит')">
             <div class="action-title">Транзит</div>
-            <div class="action-sub" id="sub-transit">перевод</div>
+            <div class="action-sub">перевод</div>
           </div>
           <div class="action-circle-btn" onclick="openInput('Долги')">
             <div class="action-title">Долги</div>
-            <div class="action-sub" id="sub-debt">учет</div>
+            <div class="action-sub">учет</div>
           </div>
         </div>
 
-        <!-- Ряд 2: Мила, Банк, Нал -->
+        <!-- Ряд 2: Мила, Банк, Нал (круглые) -->
         <div class="wallets-row">
-          <div class="wallet-circle-btn" onclick="openInput('Мила')">
-            <div class="wallet-title">Мила</div>
-            <div class="wallet-amount" id="bal-mila">...</div>
-          </div>
-          <div class="wallet-circle-btn" onclick="openInput('Банк')">
-            <div class="wallet-title">Банк</div>
-            <div class="wallet-amount" id="bal-bank">...</div>
-          </div>
-          <div class="wallet-circle-btn" onclick="openInput('Нал')">
-            <div class="wallet-title">Нал</div>
-            <div class="wallet-amount" id="bal-nal">...</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "20.0";
-
-    if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
-      localStorage.setItem("joymne_ver", APP_VERSION);
-      window.location.replace(window.location.pathname + "?v=" + Date.now());
-    }
-
-    let activeCategory = "";
-
-    function updateViewport() {
-      if (window.visualViewport) {
-        document.getElementById("appContainer").style.height = window.visualViewport.height + "px";
-        window.scrollTo(0, 0);
-      }
-    }
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", updateViewport);
-      window.visualViewport.addEventListener("scroll", updateViewport);
-      updateViewport();
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      loadBalances();
-      const savedMsg = sessionStorage.getItem("joymne_toast");
-      if (savedMsg) {
-        sessionStorage.
