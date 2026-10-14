@@ -71,26 +71,31 @@
       align-items: center;
     }
 
-    .total-gold-btn {
-      width: 105px;
-      height: 105px;
+    /* Единый размер для абсолютно всех кружков */
+    .circle-btn {
+      width: 100px;
+      height: 100px;
       background: #181b20;
-      border: 2.5px solid #eab308;
       border-radius: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 0 25px rgba(234, 179, 8, 0.25);
       transition: all 0.2s ease;
       text-align: center;
       padding: 10px;
-      margin-bottom: 4px;
     }
 
-    .total-gold-btn:active {
+    .circle-btn:active {
       transform: scale(0.95);
+    }
+
+    /* Верхняя главная кнопка Joy */
+    .total-gold-btn {
+      border: 2.5px solid #eab308;
+      box-shadow: 0 0 25px rgba(234, 179, 8, 0.25);
+      margin-bottom: 4px;
     }
 
     .gold-title {
@@ -104,9 +109,9 @@
       font-weight: 600;
       color: #fff;
       margin-top: 3px;
-      min-height: 14px;
     }
 
+    /* Верхний ряд: Долги (красный) и Транзит (серый) */
     .actions-row {
       display: flex;
       justify-content: center;
@@ -114,26 +119,8 @@
       width: 100%;
     }
 
-    .action-circle-btn {
-      width: 95px;
-      height: 95px;
-      background: #181b20;
-      border: 2px solid #3b82f6;
-      border-radius: 50%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
-      transition: all 0.2s ease;
-      text-align: center;
-      padding: 10px;
-    }
-
-    .action-circle-btn:active {
-      transform: scale(0.95);
-    }
+    .btn-debt { border: 2.5px solid #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.25); }
+    .btn-transit { border: 2.5px solid #6b7280; box-shadow: 0 0 20px rgba(107, 114, 128, 0.2); }
 
     .action-title {
       font-size: 0.9rem;
@@ -146,9 +133,9 @@
       font-weight: 600;
       color: #9ca3af;
       margin-top: 2px;
-      min-height: 12px;
     }
 
+    /* Нижний ряд: Мила, Банк, Руки */
     .wallets-row {
       display: flex;
       justify-content: center;
@@ -156,29 +143,9 @@
       width: 100%;
     }
 
-    .wallet-circle-btn {
-      width: 105px;
-      height: 105px;
-      background: #181b20;
-      border-radius: 50%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      transition: all 0.2s ease;
-      text-align: center;
-      padding: 10px;
-    }
-
     .wallet-mila { border: 2.5px solid #a855f7; box-shadow: 0 0 20px rgba(168, 85, 247, 0.25); }
     .wallet-bank { border: 2.5px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.25); }
     .wallet-hands { border: 2.5px solid #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.25); }
-
-    .wallet-circle-btn:active {
-      transform: scale(0.95);
-    }
 
     .wallet-title {
       font-size: 0.95rem;
@@ -191,7 +158,6 @@
       font-weight: 600;
       color: #d1d5db;
       margin-top: 3px;
-      min-height: 14px;
     }
 
     .input-box {
@@ -323,34 +289,37 @@
 
       <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%;">
         
-        <div class="total-gold-btn" onclick="toggleBalances()">
+        <!-- Кнопка Joy по центру сверху -->
+        <div class="circle-btn total-gold-btn" onclick="toggleBalances()">
           <div class="gold-title">Joy</div>
-          <div class="gold-amount" id="total-gold-amount"></div>
+          <div class="gold-amount" id="total-gold-amount">---</div>
         </div>
 
+        <!-- Ряд 1: Долги (красный) и Транзит (серый) -->
         <div class="actions-row">
-          <div class="action-circle-btn" onclick="openInput('Долги')">
+          <div class="circle-btn btn-debt" onclick="openInput('Долги')">
             <div class="action-title">Долги</div>
-            <div class="action-sub" id="sub-debt"></div>
+            <div class="action-sub" id="sub-debt">---</div>
           </div>
-          <div class="action-circle-btn" onclick="openInput('Транзит')">
+          <div class="circle-btn btn-transit" onclick="openInput('Транзит')">
             <div class="action-title">Транзит</div>
-            <div class="action-sub" id="sub-transit"></div>
+            <div class="action-sub" id="sub-transit">---</div>
           </div>
         </div>
 
+        <!-- Ряд 2: Мила, Банк, Руки -->
         <div class="wallets-row">
-          <div class="wallet-circle-btn wallet-mila" onclick="openInput('Мила')">
+          <div class="circle-btn wallet-mila" onclick="openInput('Мила')">
             <div class="wallet-title">Мила</div>
-            <div class="wallet-amount" id="bal-mila"></div>
+            <div class="wallet-amount" id="bal-mila">---</div>
           </div>
-          <div class="wallet-circle-btn wallet-bank" onclick="openInput('Банк')">
+          <div class="circle-btn wallet-bank" onclick="openInput('Банк')">
             <div class="wallet-title">Банк</div>
-            <div class="wallet-amount" id="bal-bank"></div>
+            <div class="wallet-amount" id="bal-bank">---</div>
           </div>
-          <div class="wallet-circle-btn wallet-hands" onclick="openInput('Руки')">
+          <div class="circle-btn wallet-hands" onclick="openInput('Руки')">
             <div class="wallet-title">Руки</div>
-            <div class="wallet-amount" id="bal-hands"></div>
+            <div class="wallet-amount" id="bal-hands">---</div>
           </div>
         </div>
       </div>
@@ -360,7 +329,7 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "29.0";
+    const APP_VERSION = "30.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -395,13 +364,13 @@
     async function toggleBalances() {
       if (areBalancesVisible) {
         areBalancesVisible = false;
-        document.getElementById("bal-mila").innerText = "";
-        document.getElementById("bal-bank").innerText = "";
-        document.getElementById("bal-hands").innerText = "";
-        document.getElementById("sub-debt").innerText = "";
+        document.getElementById("bal-mila").innerText = "---";
+        document.getElementById("bal-bank").innerText = "---";
+        document.getElementById("bal-hands").innerText = "---";
+        document.getElementById("sub-debt").innerText = "---";
         document.getElementById("sub-debt").style.color = "#9ca3af";
-        document.getElementById("sub-transit").innerText = "";
-        document.getElementById("total-gold-amount").innerText = "";
+        document.getElementById("sub-transit").innerText = "---";
+        document.getElementById("total-gold-amount").innerText = "---";
       } else {
         showToast("Загрузка балансов...");
         try {
