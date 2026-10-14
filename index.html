@@ -227,7 +227,7 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "8.0";
+    const APP_VERSION = "9.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -248,17 +248,12 @@
     let currentTranscript = "";
     let silenceTimer = null;
 
+    // Показываем уведомление об успехе после перезагрузки
     window.addEventListener("DOMContentLoaded", () => {
       const savedMsg = sessionStorage.getItem("joymne_toast");
       if (savedMsg) {
         sessionStorage.removeItem("joymne_toast");
-        document.body.classList.add("saved");
         showToast(savedMsg);
-        status.innerText = "Сохранено!";
-        setTimeout(() => {
-          document.body.classList.remove("saved");
-          status.innerText = "Коснитесь для записи";
-        }, 2000);
       }
     });
 
@@ -293,7 +288,6 @@
 
       recognition.onstart = () => {
         isRecording = true;
-        document.body.classList.remove("saved");
         document.body.classList.add("recording");
         status.innerText = "Слушаю...";
       };
@@ -406,6 +400,7 @@
           const tx = data.transaction;
           const msg = `✓ ${tx.amount} ${tx.currency} — ${tx.category}`;
 
+          // Мгновенная перезагрузка страницы для сброса аудиосессии iOS
           sessionStorage.setItem("joymne_toast", msg);
           window.location.replace(window.location.pathname + "?t=" + Date.now());
         } else {
