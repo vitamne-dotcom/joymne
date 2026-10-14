@@ -41,15 +41,17 @@
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: 30px 20px 24px 20px;
+      /* Безопасные отступы, чтобы не перекрываться с «островом» и статус-баром iOS */
+      padding: max(50px, env(safe-area-inset-top) + 20px) 20px max(30px, env(safe-area-inset-bottom)) 20px;
       transition: height 0.15s ease-out;
     }
 
-    .app-header {
+    .top-bar {
       width: 100%;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
+      gap: 12px;
     }
 
     header {
@@ -66,8 +68,8 @@
       font-size: 0.9rem;
       font-weight: 600;
       background: rgba(59, 130, 246, 0.1);
-      padding: 6px 12px;
-      border-radius: 12px;
+      padding: 6px 16px;
+      border-radius: 14px;
       border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
@@ -223,9 +225,9 @@
   <div id="toast" class="toast"></div>
 
   <div class="app-container" id="appContainer">
-    <div class="app-header">
+    <div class="top-bar">
       <header>joymne</header>
-      <a href="https://docs.google.com/spreadsheets/d/1B1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L/edit" target="_blank" class="sheet-link" id="sheetLink">Таблица ↗</a>
+      <a href="https://docs.google.com/spreadsheets/d/your_sheet_id_here/edit" target="_blank" class="sheet-link" id="sheetLink">Открыть таблицу ↗</a>
     </div>
 
     <div class="voice-box" id="voiceBox">
@@ -251,11 +253,11 @@
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
     
-    // Ссылка на вашу Google Таблицу (замените при необходимости на реальную)
+    // Ссылка на вашу Google Таблицу
     const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/your_sheet_id_here/edit";
     document.getElementById("sheetLink").href = GOOGLE_SHEET_URL;
 
-    const APP_VERSION = "15.0";
+    const APP_VERSION = "16.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -330,14 +332,14 @@
 
       recognition = new SpeechRecognition();
       recognition.lang = "ru-RU";
-      recognition.continuous = false; // Одиночный режим более стабилен на iOS при перезапуске
+      recognition.continuous = false; // Стабильный одиночный режим для iOS Safari
       recognition.interimResults = true;
 
       recognition.onstart = () => {
         isRecording = true;
         document.body.classList.remove("saved");
         document.body.classList.add("recording");
-        status.innerText = "Слушаю...";
+        status.innerText = "Слушаю... (нажмите еще раз для остановки)";
       };
 
       recognition.onresult = (e) => {
@@ -423,7 +425,7 @@
       showToast("Записываем: " + text);
 
       try {
-        const response = await fetch(APPS_SCRIPT_URL, {
+        const response = label = await fetch(APPS_SCRIPT_URL, {
           method: "POST",
           headers: { 
             "Content-Type": "text/plain;charset=utf-8" 
@@ -442,7 +444,6 @@
           status.innerText = "Сохранено!";
           sessionStorage.setItem("joymne_toast", msg);
 
-          // Полный сброс контекста аудио через жесткий редирект с заменой истории
           setTimeout(() => {
             window.location.replace(window.location.pathname + "?reload=" + Date.now());
           }, 300);
