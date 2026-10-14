@@ -70,12 +70,11 @@
       border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
-    /* Блок касс и остатков */
     .wallets-grid {
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
       margin: 10px 0;
     }
 
@@ -83,36 +82,36 @@
       background: #181b20;
       border: 1px solid #2a2e37;
       border-radius: 14px;
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      text-align: center;
     }
 
     .wallet-name {
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       color: #9ca3af;
       font-weight: 500;
     }
 
     .wallet-balance {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       color: #fff;
     }
 
-    /* Основные кнопки выбора кассы */
     .action-section {
       width: 100%;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       margin-bottom: auto;
       margin-top: auto;
     }
 
     .section-title {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: #9ca3af;
       text-align: center;
       font-weight: 500;
@@ -121,16 +120,16 @@
     .buttons-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      gap: 10px;
     }
 
     .cash-btn {
       background: #181b20;
       border: 2px solid #2a2e37;
       color: #fff;
-      padding: 20px;
-      border-radius: 18px;
-      font-size: 1.1rem;
+      padding: 16px;
+      border-radius: 16px;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -149,7 +148,12 @@
       background: rgba(59, 130, 246, 0.1);
     }
 
-    /* Блок ввода транзакции (появляется после выбора кассы) */
+    .cash-btn.debt {
+      grid-column: span 2;
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.1);
+    }
+
     .input-box {
       width: 100%;
       background: #181b20;
@@ -207,9 +211,21 @@
       border: none;
       color: #fff;
       border-radius: 12px;
-      padding: 0 20px;
+      padding: 0 16px;
       font-weight: 600;
       cursor: pointer;
+    }
+
+    .photo-btn {
+      background: #2a2e37;
+      border: none;
+      color: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.9rem;
     }
 
     .toast {
@@ -242,17 +258,17 @@
   <div class="app-container" id="appContainer">
     <div class="top-bar">
       <header>joymne</header>
-      <a href="#" target="_blank" class="sheet-link" id="sheetLink">Таблица ↗</a>
+      <a href="https://docs.google.com/spreadsheets/d/1CV7tLiYPKjXMrVszVIZI4bh5W0Ai3LpZfTyJVn4-8sY/edit" target="_blank" class="sheet-link" id="sheetLink">Таблица ↗</a>
     </div>
 
-    <!-- Отображение остатков касс -->
+    <!-- Остатки касс -->
     <div class="wallets-grid" id="walletsGrid">
       <div class="wallet-card"><div class="wallet-name">Мила</div><div class="wallet-balance" id="bal-mila">...</div></div>
       <div class="wallet-card"><div class="wallet-name">Банк</div><div class="wallet-balance" id="bal-bank">...</div></div>
       <div class="wallet-card"><div class="wallet-name">Нал</div><div class="wallet-balance" id="bal-nal">...</div></div>
     </div>
 
-    <!-- Кнопки выбора кассы -->
+    <!-- Кнопки выбора -->
     <div class="action-section" id="actionSection">
       <div class="section-title">Выберите кассу или действие:</div>
       <div class="buttons-grid">
@@ -260,32 +276,30 @@
         <button class="cash-btn" onclick="openInput('Банк')">Банк</button>
         <button class="cash-btn" onclick="openInput('Нал')">Нал</button>
         <button class="cash-btn transit" onclick="openInput('Транзит')">Транзит (перевод)</button>
+        <button class="cash-btn debt" onclick="openInput('Долги')">Долги (дать / вернуть)</button>
       </div>
     </div>
 
-    <!-- Форма ввода (вызывающая клавиатуру и микрофон) -->
+    <!-- Форма ввода -->
     <div class="input-box" id="inputBox">
       <div class="input-header">
         <span id="selectedActionTitle">Ввод</span>
         <button class="close-input" onclick="closeInput()">✕</button>
       </div>
       <div class="input-row">
-        <input type="text" id="txInput" placeholder="например: продукты 500 или -200" autocomplete="off" />
+        <input type="text" id="txInput" placeholder="Текст или сумма..." autocomplete="off" />
         <button id="sendBtn" onclick="submitTransaction()">ОК</button>
       </div>
-      <div style="font-size: 0.8rem; color: #6b7280; text-align: center;">
-        Используйте 🎤 на клавиатуре для голосового ввода
-      </div>
+      <label class="photo-btn">
+        📷 Сфотографировать чек
+        <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;" onchange="handlePhoto(this)" />
+      </label>
     </div>
-
   </div>
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/your_sheet_id_here/edit";
-    document.getElementById("sheetLink").href = GOOGLE_SHEET_URL;
-
-    const APP_VERSION = "17.0";
+    const APP_VERSION = "18.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -312,14 +326,12 @@
           document.getElementById("bal-bank").innerText = (data.balances.Банк || 0) + " €";
           document.getElementById("bal-nal").innerText = (data.balances.Нал || 0) + " €";
         }
-      } catch (e) {
-        // Игнорируем ошибки загрузки балансов при офлайне
-      }
+      } catch (e) {}
     }
 
     function openInput(category) {
       activeCategory = category;
-      document.getElementById("selectedActionTitle").innerText = category === 'Транзит' ? 'Транзит (напр: с Милы на Банк 100)' : 'Касса: ' + category;
+      document.getElementById("selectedActionTitle").innerText = category === 'Транзит' ? 'Транзит (с Милы на Банк 100)' : (category === 'Долги' ? 'Долги (дал/вернул)' : 'Касса: ' + category);
       document.getElementById("actionSection").style.display = "none";
       document.getElementById("inputBox").classList.add("open");
       
@@ -333,18 +345,18 @@
       document.getElementById("actionSection").style.display = "flex";
     }
 
-    async function submitTransaction() {
+    async function submitTransaction(photoBase64 = null) {
       const text = document.getElementById("txInput").value.trim();
-      if (!text) return;
+      if (!text && !photoBase64) return;
 
       closeInput();
-      showToast("Сохранение...");
+      showToast("Сохранение и анализ...");
 
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ category: activeCategory, text: text }),
+          body: JSON.stringify({ category: activeCategory, text: text, photo: photoBase64 }),
           redirect: "follow"
         });
 
@@ -358,6 +370,16 @@
         }
       } catch (err) {
         showToast("Ошибка соединения");
+      }
+    }
+
+    function handlePhoto(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          submitTransaction(e.target.result);
+        };
+        reader.readAsDataURL(input.files[0]);
       }
     }
 
