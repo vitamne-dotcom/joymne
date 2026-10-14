@@ -221,112 +221,126 @@
 
     let isRecording = false;
     let recognition = null;
-    let audioStream = null;
     let lastRecognizedText = "";
     let silenceTimer = null;
+    let isTransitioning = false;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    function cleanupState() {
+    function destroyRecognition() {
+      if (recognition) {
+        recognition.onstart = null;
+        recognition.onresult = null;
+        recognition.onerror = null;
+        recognition.onend = null;
+        try {
+          recognition.abort();
+        } catch (e) {}
+        recognition = null;
+      }
+    }
+
+    function resetUI() {
       isRecording = false;
       clearTimeout(silenceTimer);
       document.body.classList.remove("recording");
       status.innerText = "Коснитесь для записи";
-
-      // Освобождаем аппаратный аудиоканал iOS
-      if (audioStream) {
-        audioStream.getTracks().forEach(track => track.stop());
-        audioStream = null;
-      }
     }
 
-    async function startRecording() {
+    function createRecognition() {
+      if (!SpeechRecognition) return null;
+
+      destroyRecognition();
+
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = "ru-RU";
+
+      rec.onstart = () => {
+        isRecording = true;
+        isTransitioning = false;
+        document.body.classList.add("recording");
+        status.innerText = "Слушаю...";
+      };
+
+      rec.onresult = (e) => {
+        let text = "";
+        for (let i = 0; i < e.results.length; ++i) {
+          text += e.results[i][0].transcript;
+        }
+
+        if (text.trim()) {
+          lastRecognizedText = text.trim();
+          preview.innerText = lastRecognizedText;
+
+          clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            if (isRecording) {
+              stopAndSend();
+            }
+          }, 1400);
+        }
+      };
+
+      rec.onerror = (e) => {
+        console.warn("Speech error:", e.error);
+        if (e.error !== "no-speech" && e.error !== "aborted") {
+          showToast("Ошибка микрофона: " + e.error);
+        }
+        destroyRecognition();
+        resetUI();
+        isTransitioning = false;
+      };
+
+      rec.onend = () => {
+        if (isRecording) {
+          stopAndSend();
+        } else {
+          destroyRecognition();
+          resetUI();
+          isTransitioning = false;
+        }
+      };
+
+      return rec;
+    }
+
+    function startListening() {
       if (!SpeechRecognition) {
         showToast("Голосовой ввод не поддерживается");
         return;
       }
 
-      cleanupState();
+      if (isTransitioning) return;
+      isTransitioning = true;
+
+      resetUI();
       preview.innerText = "";
       lastRecognizedText = "";
-      status.innerText = "Включение микрофона...";
+      status.innerText = "Запуск микрофона...";
 
-      try {
-        // Принудительно будим микрофон на iOS перед созданием распознавателя
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Небольшая задержка перед стартом позволяет iOS полностью сбросить предыдущую аудиосессию
+      setTimeout(() => {
+        try {
+          recognition = createRecognition();
+          if (recognition) {
+            recognition.start();
+          }
+        } catch (err) {
+          console.warn("Recognition start failed:", err);
+          destroyRecognition();
+          resetUI();
+          isTransitioning = false;
         }
-
-        if (recognition) {
-          try { recognition.abort(); } catch (e) {}
-          recognition = null;
-        }
-
-        recognition = new SpeechRecognition();
-        recognition.continuous = false; // Для iOS стабильнее короткие сессии
-        recognition.interimResults = true;
-        recognition.lang = "ru-RU";
-
-        recognition.onstart = () => {
-          isRecording = true;
-          document.body.classList.add("recording");
-          status.innerText = "Слушаю...";
-        };
-
-        recognition.onresult = (e) => {
-          let text = "";
-          for (let i = 0; i < e.results.length; ++i) {
-            text += e.results[i][0].transcript;
-          }
-
-          if (text.trim()) {
-            lastRecognizedText = text.trim();
-            preview.innerText = lastRecognizedText;
-
-            // Если замолчали на 1.3 секунды — фиксируем и отправляем
-            clearTimeout(silenceTimer);
-            silenceTimer = setTimeout(() => {
-              if (isRecording) {
-                stopRecordingAndSend();
-              }
-            }, 1300);
-          }
-        };
-
-        recognition.onerror = (e) => {
-          console.warn("Speech error:", e.error);
-          if (e.error !== "no-speech" && e.error !== "aborted") {
-            showToast("Ошибка микрофона: " + e.error);
-          }
-          cleanupState();
-        };
-
-        recognition.onend = () => {
-          if (isRecording) {
-            stopRecordingAndSend();
-          } else {
-            cleanupState();
-          }
-        };
-
-        recognition.start();
-
-      } catch (err) {
-        console.error("Mic access error:", err);
-        showToast("Нет доступа к микрофону");
-        cleanupState();
-      }
+      }, 250);
     }
 
-    function stopRecordingAndSend() {
+    function stopAndSend() {
       const textToSend = lastRecognizedText;
-      
-      cleanupState();
 
-      if (recognition) {
-        try { recognition.stop(); } catch (e) {}
-        recognition = null;
-      }
+      resetUI();
+      destroyRecognition();
 
       if (textToSend && textToSend.length > 0) {
         sendTransaction(textToSend);
@@ -335,9 +349,9 @@
 
     voiceBox.addEventListener("click", () => {
       if (isRecording) {
-        stopRecordingAndSend();
+        stopAndSend();
       } else {
-        startRecording();
+        startListening();
       }
     });
 
