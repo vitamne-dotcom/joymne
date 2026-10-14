@@ -42,7 +42,7 @@
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: max(20px, env(safe-area-inset-top) + 10px) 14px max(20px, env(safe-area-inset-bottom)) 14px;
+      padding: max(20px, env(safe-area-inset-top) + 10px) 16px max(24px, env(safe-area-inset-bottom)) 16px;
       transition: height 0.15s ease-out;
     }
 
@@ -61,29 +61,30 @@
       text-transform: lowercase;
     }
 
-    /* Нижняя панель */
     .bottom-panel {
       width: 100%;
-      max-width: 400px;
+      max-width: 380px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       margin-top: auto;
+      align-items: center;
     }
 
-    /* Ряд 1: Долги слева, Транзит справа (круглые в один ряд) */
+    /* Верхний ряд: Долги и Транзит (абсолютно круглая форма) */
     .actions-row {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
       width: 100%;
     }
 
     .action-circle-btn {
+      width: 95px;
+      height: 95px;
       background: #181b20;
       border: 2px solid #3b82f6;
-      border-radius: 30px;
-      padding: 12px 8px;
+      border-radius: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -92,6 +93,7 @@
       box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
       transition: all 0.2s ease;
       text-align: center;
+      padding: 10px;
     }
 
     .action-circle-btn:active {
@@ -100,47 +102,53 @@
     }
 
     .action-title {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       font-weight: 700;
       color: #fff;
     }
 
     .action-sub {
       font-size: 0.7rem;
+      font-weight: 600;
       color: #9ca3af;
-      margin-top: 1px;
+      margin-top: 2px;
     }
 
-    /* Ряд 2: 3 круглые кнопки касс (Мила, Банк, Нал) */
+    /* Нижний ряд: Мила, Банк, Руки (абсолютно круглые с фирменными цветами) */
     .wallets-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
     }
 
     .wallet-circle-btn {
+      width: 105px;
+      height: 105px;
       background: #181b20;
-      border: 2px solid #2a2e37;
-      border-radius: 35px;
-      padding: 14px 4px;
+      border-radius: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
       transition: all 0.2s ease;
       text-align: center;
-      min-height: 80px;
+      padding: 10px;
     }
+
+    /* Фирменные цвета для касс */
+    .wallet-mila { border: 2.5px solid #a855f7; box-shadow: 0 0 20px rgba(168, 85, 247, 0.25); }
+    .wallet-bank { border: 2.5px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.25); }
+    .wallet-hands { border: 2.5px solid #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.25); }
 
     .wallet-circle-btn:active {
       transform: scale(0.95);
-      border-color: #3b82f6;
     }
 
     .wallet-title {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 700;
       color: #fff;
     }
@@ -148,11 +156,10 @@
     .wallet-amount {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #3b82f6;
+      color: #d1d5db;
       margin-top: 3px;
     }
 
-    /* Модальное окно ввода */
     .input-box {
       width: 100%;
       background: #181b20;
@@ -263,17 +270,15 @@
       Выберите действие внизу 👇
     </div>
 
-    <!-- Нижняя панель с кнопками -->
     <div class="bottom-panel" id="bottomPanel">
       
-      <!-- Форма ввода -->
       <div class="input-box" id="inputBox">
         <div class="input-header">
           <span id="selectedActionTitle">Ввод</span>
           <button class="close-input" onclick="closeInput()">✕</button>
         </div>
         <div class="input-row">
-          <input type="text" id="txInput" placeholder="Текст или сумма (используйте 🎤)" autocomplete="off" />
+          <input type="text" id="txInput" placeholder="например: -50 или 50" autocomplete="off" />
           <button id="sendBtn" onclick="submitTransaction()">ОК</button>
         </div>
         <label class="photo-btn">
@@ -282,13 +287,12 @@
         </label>
       </div>
 
-      <!-- Кнопки действий и касс -->
-      <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 8px;">
-        <!-- Ряд 1: Долги слева, Транзит справа (круглые) -->
+      <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%;">
+        <!-- Ряд 1: Долги и Транзит -->
         <div class="actions-row">
           <div class="action-circle-btn" onclick="openInput('Долги')">
             <div class="action-title">Долги</div>
-            <div class="action-sub">учет</div>
+            <div class="action-sub" id="sub-debt">0 €</div>
           </div>
           <div class="action-circle-btn" onclick="openInput('Транзит')">
             <div class="action-title">Транзит</div>
@@ -296,19 +300,19 @@
           </div>
         </div>
 
-        <!-- Ряд 2: Мила, Банк, Нал (круглые с суммой) -->
+        <!-- Ряд 2: Мила, Банк, Руки -->
         <div class="wallets-row">
-          <div class="wallet-circle-btn" onclick="openInput('Мила')">
+          <div class="wallet-circle-btn wallet-mila" onclick="openInput('Мила')">
             <div class="wallet-title">Мила</div>
             <div class="wallet-amount" id="bal-mila">0 €</div>
           </div>
-          <div class="wallet-circle-btn" onclick="openInput('Банк')">
+          <div class="wallet-circle-btn wallet-bank" onclick="openInput('Банк')">
             <div class="wallet-title">Банк</div>
             <div class="wallet-amount" id="bal-bank">0 €</div>
           </div>
-          <div class="wallet-circle-btn" onclick="openInput('Нал')">
-            <div class="wallet-title">Нал</div>
-            <div class="wallet-amount" id="bal-nal">0 €</div>
+          <div class="wallet-circle-btn wallet-hands" onclick="openInput('Руки')">
+            <div class="wallet-title">Руки</div>
+            <div class="wallet-amount" id="bal-hands">0 €</div>
           </div>
         </div>
       </div>
@@ -318,7 +322,7 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "24.0";
+    const APP_VERSION = "26.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -356,14 +360,19 @@
         if (data.status === "success") {
           document.getElementById("bal-mila").innerText = (data.balances.Мила || 0) + " €";
           document.getElementById("bal-bank").innerText = (data.balances.Банк || 0) + " €";
-          document.getElementById("bal-nal").innerText = (data.balances.Нал || 0) + " €";
+          document.getElementById("bal-hands").innerText = (data.balances.Руки || 0) + " €";
+          
+          const debtVal = data.balances.Долги || 0;
+          const debtEl = document.getElementById("sub-debt");
+          debtEl.innerText = (debtVal > 0 ? "+" : "") + debtVal + " €";
+          debtEl.style.color = debtVal < 0 ? "#ef4444" : (debtVal > 0 ? "#10b981" : "#9ca3af");
         }
       } catch (e) {}
     }
 
     function openInput(category) {
       activeCategory = category;
-      document.getElementById("selectedActionTitle").innerText = category === 'Транзит' ? 'Транзит (с Милы на Банк 100)' : (category === 'Долги' ? 'Долги (дал / вернул)' : 'Касса: ' + category);
+      document.getElementById("selectedActionTitle").innerText = category === 'Транзит' ? 'Транзит (с Милы на Банк 100)' : (category === 'Долги' ? 'Долги (-50 должен, 50 мне)' : 'Касса: ' + category);
       document.getElementById("buttonsSection").style.display = "none";
       document.getElementById("inputBox").classList.add("open");
       
@@ -382,7 +391,7 @@
       if (!text && !photoBase64) return;
 
       closeInput();
-      showToast("Сохранение...");
+      showToast("Обработка...");
 
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
