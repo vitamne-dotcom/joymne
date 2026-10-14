@@ -4,11 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <title>joymne v2</title>
+  <title>joymne</title>
 
-  <!-- PWA настройки под iOS Safari -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="joymne" />
@@ -20,6 +17,8 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     html, body {
@@ -32,153 +31,119 @@
     }
 
     .app-container {
+      position: relative;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
       align-items: center;
       height: 100%;
-      padding: 36px 20px 20px 20px;
-      gap: 20px;
+      padding-top: 12vh;
     }
 
     header {
+      position: absolute;
+      top: 28px;
       font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: 1px;
-      color: #10b981;
+      color: #6b7280;
+      text-transform: lowercase;
     }
 
-    .voice-card {
-      position: relative;
-      width: 100%;
-      max-width: 380px;
-      background: #181b20;
-      border: 2px solid #2a2e37;
-      border-radius: 24px;
-      padding: 24px 20px;
+    /* Прозрачный label поверх всего экрана: касание кнопки открывает клавиатуру */
+    .voice-trigger {
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: all 0.25s ease;
-    }
-
-    .voice-card.active {
-      border-color: #10b981;
-      box-shadow: 0 0 35px rgba(16, 185, 129, 0.25);
-    }
-
-    .mic-wrapper {
-      position: relative;
-      width: 96px;
-      height: 96px;
-      margin-bottom: 16px;
+      justify-content: center;
+      cursor: pointer;
+      width: 100%;
+      padding: 20px;
     }
 
     .mic-btn {
-      width: 100%;
-      height: 100%;
+      width: 126px;
+      height: 126px;
       border-radius: 50%;
-      background: #0d0f12;
+      background: #181b20;
       border: 3px solid #3b82f6;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.35);
       transition: all 0.25s ease;
-      pointer-events: none;
     }
 
     .mic-btn svg {
-      width: 42px;
-      height: 42px;
+      width: 54px;
+      height: 54px;
       fill: #3b82f6;
-      transition: fill 0.2s ease;
+      transition: fill 0.25s ease;
     }
 
-    .voice-card.active .mic-btn {
+    /* Когда клавиатура активна и ждет голос */
+    body.listening .mic-btn {
+      border-color: #ef4444;
+      box-shadow: 0 0 50px rgba(239, 68, 68, 0.55);
+      transform: scale(1.06);
+    }
+
+    body.listening .mic-btn svg {
+      fill: #ef4444;
+    }
+
+    /* Когда транзакция успешно сохранена */
+    body.saved .mic-btn {
       border-color: #10b981;
-      box-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
-      transform: scale(1.05);
+      box-shadow: 0 0 45px rgba(16, 185, 129, 0.55);
     }
 
-    .voice-card.active .mic-btn svg {
+    body.saved .mic-btn svg {
       fill: #10b981;
     }
 
     .status {
-      font-size: 1rem;
+      margin-top: 24px;
+      font-size: 1.1rem;
       color: #9ca3af;
       text-align: center;
       font-weight: 500;
-      margin-bottom: 14px;
     }
 
-    /* Видимое поле ввода, в которое сразу попадает фокус */
-    .dictation-input {
-      width: 100%;
-      background: #0d0f12;
-      border: 2px solid #3b82f6;
-      border-radius: 14px;
-      padding: 16px;
-      color: #ffffff;
-      font-size: 1.15rem;
-      font-weight: 600;
-      text-align: center;
-      outline: none;
-      transition: border-color 0.2s;
-      -webkit-user-select: text;
-      user-select: text;
-    }
-
-    .dictation-input:focus {
-      border-color: #10b981;
-    }
-
-    .dictation-input::placeholder {
-      color: #6b7280;
-      font-weight: 400;
-      font-size: 0.95rem;
-    }
-
-    /* Прозрачный label поверх всей карточки, чтобы тап в любое место открывал клавиатуру */
-    .tap-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 80px;
-      z-index: 10;
-      cursor: pointer;
-    }
-
-    .send-now-btn {
+    .preview {
       margin-top: 14px;
-      width: 100%;
-      background: #10b981;
-      color: #fff;
-      border: none;
-      border-radius: 14px;
-      padding: 14px;
-      font-size: 1.05rem;
+      font-size: 1.25rem;
+      color: #ffffff;
+      text-align: center;
+      min-height: 32px;
+      max-width: 88%;
       font-weight: 600;
-      cursor: pointer;
-      display: none;
-      z-index: 20;
+      line-height: 1.35;
     }
 
-    .send-now-btn.visible {
-      display: block;
+    /* Полностью невидимый инпут для приёма системной диктовки iOS */
+    #hiddenInput {
+      position: fixed;
+      top: -100px;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: transparent;
     }
 
     .toast {
       position: fixed;
-      top: 16px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
       background: #181b20;
-      border: 1px solid #10b981;
+      border: 1px solid #374151;
       color: #fff;
-      padding: 12px 20px;
+      padding: 12px 22px;
       border-radius: 20px;
       font-size: 0.95rem;
       box-shadow: 0 10px 25px rgba(0,0,0,0.6);
@@ -197,81 +162,66 @@
 
   <div id="toast" class="toast"></div>
 
+  <!-- Невидимое поле, связанное с центральной круглой кнопкой -->
+  <input type="text" id="hiddenInput" autocomplete="off" autocorrect="off" enterkeyhint="send" />
+
   <div class="app-container">
-    <header>joymne v2</header>
+    <header>joymne</header>
 
-    <div class="voice-card" id="voiceCard">
-      <!-- Label напрямую связан с input: в iOS нажатие на label гарантированно открывает клавиатуру! -->
-      <label for="dictationInput" class="tap-overlay"></label>
-
-      <div class="mic-wrapper">
-        <div class="mic-btn">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-          </svg>
-        </div>
+    <label for="hiddenInput" class="voice-trigger" id="voiceBox">
+      <div class="mic-btn">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
       </div>
-
-      <div class="status" id="status">Коснитесь микрофона для клавиатуры 👇</div>
-
-      <input 
-        type="text" 
-        id="dictationInput" 
-        class="dictation-input" 
-        placeholder="Нажмите сюда и на 🎙️ внизу" 
-        autocomplete="off"
-        autocorrect="off"
-        enterkeyhint="send"
-      />
-
-      <button id="sendNowBtn" class="send-now-btn">Отправить сейчас</button>
-    </div>
+      <div class="status" id="status">Коснитесь для записи</div>
+      <div class="preview" id="preview"></div>
+    </label>
   </div>
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
 
-    const voiceCard = document.getElementById("voiceCard");
+    const hiddenInput = document.getElementById("hiddenInput");
     const status = document.getElementById("status");
-    const dictationInput = document.getElementById("dictationInput");
-    const sendNowBtn = document.getElementById("sendNowBtn");
+    const preview = document.getElementById("preview");
     const toast = document.getElementById("toast");
 
     let autoSendTimer = null;
     let isSending = false;
 
-    dictationInput.addEventListener("focus", () => {
-      voiceCard.classList.add("active");
-      status.innerText = "Нажмите 🎙️ справа внизу на клавиатуре";
+    hiddenInput.addEventListener("focus", () => {
+      document.body.classList.remove("saved");
+      document.body.classList.add("listening");
+      status.innerText = "Слушаю (нажмите 🎙️ внизу)...";
     });
 
-    dictationInput.addEventListener("blur", () => {
-      voiceCard.classList.remove("active");
-      if (!dictationInput.value.trim()) {
-        status.innerText = "Коснитесь микрофона для клавиатуры 👇";
+    hiddenInput.addEventListener("blur", () => {
+      document.body.classList.remove("listening");
+      if (!hiddenInput.value.trim() && !isSending) {
+        status.innerText = "Коснитесь для записи";
       }
     });
 
-    // Автоматическая отправка через 2 секунды после окончания диктовки
-    dictationInput.addEventListener("input", () => {
-      const val = dictationInput.value.trim();
+    // Все слова из диктовки мгновенно отображаются под круглой кнопкой
+    hiddenInput.addEventListener("input", () => {
+      const val = hiddenInput.value.trim();
+      preview.innerText = val;
       clearTimeout(autoSendTimer);
 
       if (val.length > 0) {
-        sendNowBtn.classList.add("visible");
-        status.innerText = "Авто-сохранение через 2 сек...";
-
+        status.innerText = "Записываю...";
         autoSendTimer = setTimeout(() => {
           triggerSend();
-        }, 2000);
+        }, 1800);
       } else {
-        sendNowBtn.classList.remove("visible");
-        status.innerText = "Нажмите 🎙️ справа внизу на клавиатуре";
+        status.innerText = "Слушаю (нажмите 🎙️ внизу)...";
       }
     });
 
-    dictationInput.addEventListener("keydown", (e) => {
+    // Если нажали Enter / "Отправить" на клавиатуре или еще раз по круглой кнопке
+    hiddenInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
         clearTimeout(autoSendTimer);
@@ -279,26 +229,18 @@
       }
     });
 
-    sendNowBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      clearTimeout(autoSendTimer);
-      triggerSend();
-    });
-
     function triggerSend() {
-      const text = dictationInput.value.trim();
+      const text = hiddenInput.value.trim();
       if (!text || isSending) return;
 
-      dictationInput.value = "";
-      sendNowBtn.classList.remove("visible");
-      dictationInput.focus(); // Держим клавиатуру открытой для 2-й и 3-й записи!
+      hiddenInput.value = "";
       sendTransaction(text);
     }
 
     async function sendTransaction(text) {
       isSending = true;
+      document.body.classList.remove("listening");
       status.innerText = "Сохранение...";
-      showToast("Записываем: " + text);
 
       try {
         const response = await fetch(APPS_SCRIPT_URL, {
@@ -314,15 +256,27 @@
 
         if (data.status === "success") {
           const tx = data.transaction;
+          document.body.classList.add("saved");
           showToast(`✓ ${tx.amount} ${tx.currency} — ${tx.category}`);
-          status.innerText = "Сохранено! Диктуйте следующую 🎙️";
+          status.innerText = "Сохранено!";
+
+          setTimeout(() => {
+            document.body.classList.remove("saved");
+            preview.innerText = "";
+            if (document.activeElement === hiddenInput) {
+              document.body.classList.add("listening");
+              status.innerText = "Слушаю (нажмите 🎙️ внизу)...";
+            } else {
+              status.innerText = "Коснитесь для записи";
+            }
+          }, 1800);
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
-          status.innerText = "Попробуйте еще раз";
+          status.innerText = "Коснитесь для записи";
         }
       } catch (err) {
         showToast("Ошибка соединения");
-        status.innerText = "Попробуйте еще раз";
+        status.innerText = "Коснитесь для записи";
       } finally {
         isSending = false;
       }
@@ -333,7 +287,7 @@
       toast.classList.add("show");
       setTimeout(() => {
         toast.classList.remove("show");
-      }, 3500);
+      }, 3200);
     }
   </script>
 </body>
