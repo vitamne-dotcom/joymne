@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>joymne</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>joymne v2</title>
 
   <!-- PWA настройки под iOS Safari -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -26,7 +29,6 @@
       color: #f3f4f6;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
       overflow: hidden;
-      cursor: pointer;
     }
 
     .app-container {
@@ -35,19 +37,19 @@
       justify-content: flex-start;
       align-items: center;
       height: 100%;
-      padding: 40px 20px 20px 20px;
-      gap: 24px;
+      padding: 36px 20px 20px 20px;
+      gap: 20px;
     }
 
     header {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: 1px;
-      color: #9ca3af;
-      text-transform: lowercase;
+      color: #10b981;
     }
 
     .voice-card {
+      position: relative;
       width: 100%;
       max-width: 380px;
       background: #181b20;
@@ -62,12 +64,19 @@
 
     .voice-card.active {
       border-color: #10b981;
-      box-shadow: 0 0 35px rgba(16, 185, 129, 0.2);
+      box-shadow: 0 0 35px rgba(16, 185, 129, 0.25);
+    }
+
+    .mic-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin-bottom: 16px;
     }
 
     .mic-btn {
-      width: 84px;
-      height: 84px;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       background: #0d0f12;
       border: 3px solid #3b82f6;
@@ -76,12 +85,12 @@
       justify-content: center;
       box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
       transition: all 0.25s ease;
-      margin-bottom: 14px;
+      pointer-events: none;
     }
 
     .mic-btn svg {
-      width: 38px;
-      height: 38px;
+      width: 42px;
+      height: 42px;
       fill: #3b82f6;
       transition: fill 0.2s ease;
     }
@@ -104,18 +113,21 @@
       margin-bottom: 14px;
     }
 
+    /* Видимое поле ввода, в которое сразу попадает фокус */
     .dictation-input {
       width: 100%;
       background: #0d0f12;
-      border: 1px solid #2a2e37;
+      border: 2px solid #3b82f6;
       border-radius: 14px;
-      padding: 14px 16px;
+      padding: 16px;
       color: #ffffff;
       font-size: 1.15rem;
       font-weight: 600;
       text-align: center;
       outline: none;
       transition: border-color 0.2s;
+      -webkit-user-select: text;
+      user-select: text;
     }
 
     .dictation-input:focus {
@@ -126,6 +138,17 @@
       color: #6b7280;
       font-weight: 400;
       font-size: 0.95rem;
+    }
+
+    /* Прозрачный label поверх всей карточки, чтобы тап в любое место открывал клавиатуру */
+    .tap-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 80px;
+      z-index: 10;
+      cursor: pointer;
     }
 
     .send-now-btn {
@@ -140,6 +163,7 @@
       font-weight: 600;
       cursor: pointer;
       display: none;
+      z-index: 20;
     }
 
     .send-now-btn.visible {
@@ -152,7 +176,7 @@
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
       background: #181b20;
-      border: 1px solid #374151;
+      border: 1px solid #10b981;
       color: #fff;
       padding: 12px 20px;
       border-radius: 20px;
@@ -173,26 +197,34 @@
 
   <div id="toast" class="toast"></div>
 
-  <div class="app-container" id="appContainer">
-    <header>joymne</header>
+  <div class="app-container">
+    <header>joymne v2</header>
 
     <div class="voice-card" id="voiceCard">
-      <div class="mic-btn">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-          <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-        </svg>
+      <!-- Label напрямую связан с input: в iOS нажатие на label гарантированно открывает клавиатуру! -->
+      <label for="dictationInput" class="tap-overlay"></label>
+
+      <div class="mic-wrapper">
+        <div class="mic-btn">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+        </div>
       </div>
-      <div class="status" id="status">Коснитесь любого места экрана 👇</div>
+
+      <div class="status" id="status">Коснитесь микрофона для клавиатуры 👇</div>
+
       <input 
         type="text" 
         id="dictationInput" 
         class="dictation-input" 
-        placeholder="Нажмите 🎙️ на клавиатуре" 
+        placeholder="Нажмите сюда и на 🎙️ внизу" 
         autocomplete="off"
-        autofocus
+        autocorrect="off"
         enterkeyhint="send"
       />
+
       <button id="sendNowBtn" class="send-now-btn">Отправить сейчас</button>
     </div>
   </div>
@@ -209,37 +241,19 @@
     let autoSendTimer = null;
     let isSending = false;
 
-    // Пробуем открыть сразу (сработает на десктопе/Android)
-    window.addEventListener("load", () => {
-      dictationInput.focus();
-    });
-
-    // На iOS любое первое касание в любую точку экрана мгновенно поднимает клавиатуру
-    document.body.addEventListener("touchstart", (e) => {
-      if (e.target !== sendNowBtn && document.activeElement !== dictationInput) {
-        dictationInput.focus();
-      }
-    }, { passive: true });
-
-    document.body.addEventListener("click", (e) => {
-      if (e.target !== sendNowBtn) {
-        dictationInput.focus();
-      }
-    });
-
     dictationInput.addEventListener("focus", () => {
       voiceCard.classList.add("active");
-      status.innerText = "Нажмите 🎙️ внизу клавиатуры и говорите";
+      status.innerText = "Нажмите 🎙️ справа внизу на клавиатуре";
     });
 
     dictationInput.addEventListener("blur", () => {
       voiceCard.classList.remove("active");
       if (!dictationInput.value.trim()) {
-        status.innerText = "Коснитесь любого места экрана 👇";
+        status.innerText = "Коснитесь микрофона для клавиатуры 👇";
       }
     });
 
-    // Автоматическая отправка после паузы в речи
+    // Автоматическая отправка через 2 секунды после окончания диктовки
     dictationInput.addEventListener("input", () => {
       const val = dictationInput.value.trim();
       clearTimeout(autoSendTimer);
@@ -253,7 +267,7 @@
         }, 2000);
       } else {
         sendNowBtn.classList.remove("visible");
-        status.innerText = "Нажмите 🎙️ внизу клавиатуры и говорите";
+        status.innerText = "Нажмите 🎙️ справа внизу на клавиатуре";
       }
     });
 
@@ -266,7 +280,7 @@
     });
 
     sendNowBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
+      e.preventDefault();
       clearTimeout(autoSendTimer);
       triggerSend();
     });
@@ -275,10 +289,9 @@
       const text = dictationInput.value.trim();
       if (!text || isSending) return;
 
-      // Очищаем поле, но НЕ закрываем клавиатуру (фокус остается!)
       dictationInput.value = "";
       sendNowBtn.classList.remove("visible");
-      dictationInput.focus();
+      dictationInput.focus(); // Держим клавиатуру открытой для 2-й и 3-й записи!
       sendTransaction(text);
     }
 
@@ -302,13 +315,12 @@
         if (data.status === "success") {
           const tx = data.transaction;
           showToast(`✓ ${tx.amount} ${tx.currency} — ${tx.category}`);
-          status.innerText = "Сохранено! Говорите следующую запись 🎙️";
+          status.innerText = "Сохранено! Диктуйте следующую 🎙️";
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
           status.innerText = "Попробуйте еще раз";
         }
       } catch (err) {
-        console.error("Fetch error:", err);
         showToast("Ошибка соединения");
         status.innerText = "Попробуйте еще раз";
       } finally {
