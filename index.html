@@ -41,8 +41,15 @@
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      padding: 36px 20px 24px 20px;
+      padding: 30px 20px 24px 20px;
       transition: height 0.15s ease-out;
+    }
+
+    .app-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     header {
@@ -51,6 +58,17 @@
       letter-spacing: 1px;
       color: #4b5563;
       text-transform: lowercase;
+    }
+
+    .sheet-link {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 6px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
     .voice-box {
@@ -205,7 +223,10 @@
   <div id="toast" class="toast"></div>
 
   <div class="app-container" id="appContainer">
-    <header>joymne</header>
+    <div class="app-header">
+      <header>joymne</header>
+      <a href="https://docs.google.com/spreadsheets/d/1B1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L1L/edit" target="_blank" class="sheet-link" id="sheetLink">Таблица ↗</a>
+    </div>
 
     <div class="voice-box" id="voiceBox">
       <div class="preview" id="preview"></div>
@@ -229,11 +250,16 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "14.0";
+    
+    // Ссылка на вашу Google Таблицу (замените при необходимости на реальную)
+    const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/your_sheet_id_here/edit";
+    document.getElementById("sheetLink").href = GOOGLE_SHEET_URL;
+
+    const APP_VERSION = "15.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
-      window.location.href = window.location.pathname + "?v=" + Date.now();
+      window.location.replace(window.location.pathname + "?v=" + Date.now());
     }
 
     const appContainer = document.getElementById("appContainer");
@@ -304,14 +330,14 @@
 
       recognition = new SpeechRecognition();
       recognition.lang = "ru-RU";
-      recognition.continuous = true;
+      recognition.continuous = false; // Одиночный режим более стабилен на iOS при перезапуске
       recognition.interimResults = true;
 
       recognition.onstart = () => {
         isRecording = true;
         document.body.classList.remove("saved");
         document.body.classList.add("recording");
-        status.innerText = "Слушаю... (нажмите еще раз для завершения)";
+        status.innerText = "Слушаю...";
       };
 
       recognition.onresult = (e) => {
@@ -334,14 +360,16 @@
       };
 
       recognition.onend = () => {
-        if (isRecording) {
-          isRecording = false;
-          document.body.classList.remove("recording");
-          if (currentTranscript) {
-            sendTransaction(currentTranscript);
-          } else {
-            status.innerText = "Коснитесь для записи";
-          }
+        isRecording = false;
+        document.body.classList.remove("recording");
+        status.innerText = "Коснитесь для записи";
+
+        const finalToSend = currentTranscript;
+        currentTranscript = "";
+        killRecognition();
+
+        if (finalToSend) {
+          sendTransaction(finalToSend);
         }
       };
 
@@ -349,7 +377,7 @@
         recognition.start();
       } catch (err) {
         killRecognition();
-        window.location.href = window.location.pathname + "?t=" + Date.now();
+        window.location.replace(window.location.pathname + "?t=" + Date.now());
       }
     }
 
@@ -360,16 +388,7 @@
           try { recognition.stop(); } catch (e) {}
         }
         document.body.classList.remove("recording");
-
-        const finalToSend = currentTranscript;
-        currentTranscript = "";
-        killRecognition();
-
-        if (finalToSend) {
-          sendTransaction(finalToSend);
-        } else {
-          status.innerText = "Коснитесь для записи";
-        }
+        status.innerText = "Обработка...";
       } else {
         startListening();
       }
@@ -423,9 +442,10 @@
           status.innerText = "Сохранено!";
           sessionStorage.setItem("joymne_toast", msg);
 
+          // Полный сброс контекста аудио через жесткий редирект с заменой истории
           setTimeout(() => {
-            window.location.href = window.location.pathname + "?reload=" + Date.now();
-          }, 400);
+            window.location.replace(window.location.pathname + "?reload=" + Date.now());
+          }, 300);
         } else {
           showToast("Ошибка: " + (data.message || "Не удалось сохранить"));
           status.innerText = "Коснитесь для записи";
