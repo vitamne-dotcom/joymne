@@ -71,7 +71,6 @@
       align-items: center;
     }
 
-    /* Кнопка Joy по центру сверху */
     .total-gold-btn {
       width: 105px;
       height: 105px;
@@ -105,9 +104,9 @@
       font-weight: 600;
       color: #fff;
       margin-top: 3px;
+      min-height: 14px;
     }
 
-    /* Верхний ряд: Долги и Транзит */
     .actions-row {
       display: flex;
       justify-content: center;
@@ -147,9 +146,9 @@
       font-weight: 600;
       color: #9ca3af;
       margin-top: 2px;
+      min-height: 12px;
     }
 
-    /* Нижний ряд: Мила, Банк, Руки */
     .wallets-row {
       display: flex;
       justify-content: center;
@@ -192,6 +191,7 @@
       font-weight: 600;
       color: #d1d5db;
       margin-top: 3px;
+      min-height: 14px;
     }
 
     .input-box {
@@ -323,37 +323,34 @@
 
       <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%;">
         
-        <!-- Центр сверху: Кнопка Joy (Общий баланс и вкл/выкл показ сумм) -->
         <div class="total-gold-btn" onclick="toggleBalances()">
           <div class="gold-title">Joy</div>
-          <div class="gold-amount" id="total-gold-amount">---</div>
+          <div class="gold-amount" id="total-gold-amount"></div>
         </div>
 
-        <!-- Ряд 1: Долги и Транзит -->
         <div class="actions-row">
           <div class="action-circle-btn" onclick="openInput('Долги')">
             <div class="action-title">Долги</div>
-            <div class="action-sub" id="sub-debt">---</div>
+            <div class="action-sub" id="sub-debt"></div>
           </div>
           <div class="action-circle-btn" onclick="openInput('Транзит')">
             <div class="action-title">Транзит</div>
-            <div class="action-sub" id="sub-transit">---</div>
+            <div class="action-sub" id="sub-transit"></div>
           </div>
         </div>
 
-        <!-- Ряд 2: Мила, Банк, Руки -->
         <div class="wallets-row">
           <div class="wallet-circle-btn wallet-mila" onclick="openInput('Мила')">
             <div class="wallet-title">Мила</div>
-            <div class="wallet-amount" id="bal-mila">---</div>
+            <div class="wallet-amount" id="bal-mila"></div>
           </div>
           <div class="wallet-circle-btn wallet-bank" onclick="openInput('Банк')">
             <div class="wallet-title">Банк</div>
-            <div class="wallet-amount" id="bal-bank">---</div>
+            <div class="wallet-amount" id="bal-bank"></div>
           </div>
           <div class="wallet-circle-btn wallet-hands" onclick="openInput('Руки')">
             <div class="wallet-title">Руки</div>
-            <div class="wallet-amount" id="bal-hands">---</div>
+            <div class="wallet-amount" id="bal-hands"></div>
           </div>
         </div>
       </div>
@@ -363,7 +360,7 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "28.0";
+    const APP_VERSION = "29.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -397,17 +394,15 @@
 
     async function toggleBalances() {
       if (areBalancesVisible) {
-        // Скрываем суммы обратно
         areBalancesVisible = false;
-        document.getElementById("bal-mila").innerText = "---";
-        document.getElementById("bal-bank").innerText = "---";
-        document.getElementById("bal-hands").innerText = "---";
-        document.getElementById("sub-debt").innerText = "---";
+        document.getElementById("bal-mila").innerText = "";
+        document.getElementById("bal-bank").innerText = "";
+        document.getElementById("bal-hands").innerText = "";
+        document.getElementById("sub-debt").innerText = "";
         document.getElementById("sub-debt").style.color = "#9ca3af";
-        document.getElementById("sub-transit").innerText = "---";
-        document.getElementById("total-gold-amount").innerText = "---";
+        document.getElementById("sub-transit").innerText = "";
+        document.getElementById("total-gold-amount").innerText = "";
       } else {
-        // Показываем суммы (подгружаем с сервера)
         showToast("Загрузка балансов...");
         try {
           const res = await fetch(APPS_SCRIPT_URL + "?action=getBalances");
@@ -428,7 +423,6 @@
             const transitVal = cachedBalances.Транзит || 0;
             document.getElementById("sub-transit").innerText = transitVal + " €";
 
-            // Общий итог: Мила + Банк + Руки + Транзит(Сбережения) + Долги
             const totalNet = (cachedBalances.Мила || 0) + 
                              (cachedBalances.Банк || 0) + 
                              (cachedBalances.Руки || 0) + 
