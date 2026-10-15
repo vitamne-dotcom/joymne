@@ -322,7 +322,7 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "31.0";
+    const APP_VERSION = "32.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -365,7 +365,6 @@
         document.getElementById("sub-transit").innerText = "---";
         document.getElementById("total-gold-amount").innerText = "---";
       } else {
-        showToast("Загрузка балансов...");
         try {
           const res = await fetch(APPS_SCRIPT_URL + "?action=getBalances");
           const data = await res.json();
