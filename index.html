@@ -71,7 +71,6 @@
       align-items: center;
     }
 
-    /* Единый размер для абсолютно всех кружков */
     .circle-btn {
       width: 100px;
       height: 100px;
@@ -91,7 +90,6 @@
       transform: scale(0.95);
     }
 
-    /* Верхняя главная кнопка Joy */
     .total-gold-btn {
       border: 2.5px solid #eab308;
       box-shadow: 0 0 25px rgba(234, 179, 8, 0.25);
@@ -111,7 +109,6 @@
       margin-top: 3px;
     }
 
-    /* Верхний ряд: Долги (красный) и Транзит (серый) */
     .actions-row {
       display: flex;
       justify-content: center;
@@ -135,7 +132,6 @@
       margin-top: 2px;
     }
 
-    /* Нижний ряд: Мила, Банк, Руки */
     .wallets-row {
       display: flex;
       justify-content: center;
@@ -289,13 +285,11 @@
 
       <div id="buttonsSection" style="display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%;">
         
-        <!-- Кнопка Joy по центру сверху -->
         <div class="circle-btn total-gold-btn" onclick="toggleBalances()">
           <div class="gold-title">Joy</div>
           <div class="gold-amount" id="total-gold-amount">---</div>
         </div>
 
-        <!-- Ряд 1: Долги (красный) и Транзит (серый) -->
         <div class="actions-row">
           <div class="circle-btn btn-debt" onclick="openInput('Долги')">
             <div class="action-title">Долги</div>
@@ -307,7 +301,6 @@
           </div>
         </div>
 
-        <!-- Ряд 2: Мила, Банк, Руки -->
         <div class="wallets-row">
           <div class="circle-btn wallet-mila" onclick="openInput('Мила')">
             <div class="wallet-title">Мила</div>
@@ -329,7 +322,7 @@
 
   <script>
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
-    const APP_VERSION = "30.0";
+    const APP_VERSION = "31.0";
 
     if (localStorage.getItem("joymne_ver") !== APP_VERSION) {
       localStorage.setItem("joymne_ver", APP_VERSION);
@@ -380,24 +373,24 @@
             cachedBalances = data.balances;
             areBalancesVisible = true;
             
-            document.getElementById("bal-mila").innerText = (cachedBalances.Мила || 0) + " €";
-            document.getElementById("bal-bank").innerText = (cachedBalances.Банк || 0) + " €";
-            document.getElementById("bal-hands").innerText = (cachedBalances.Руки || 0) + " €";
+            document.getElementById("bal-mila").innerText = Number(cachedBalances.Мила || 0).toFixed(2) + " €";
+            document.getElementById("bal-bank").innerText = Number(cachedBalances.Банк || 0).toFixed(2) + " €";
+            document.getElementById("bal-hands").innerText = Number(cachedBalances.Руки || 0).toFixed(2) + " €";
             
             const debtVal = cachedBalances.Долги || 0;
             const debtEl = document.getElementById("sub-debt");
-            debtEl.innerText = (debtVal > 0 ? "+" : "") + debtVal + " €";
+            debtEl.innerText = (debtVal > 0 ? "+" : "") + Number(debtVal).toFixed(2) + " €";
             debtEl.style.color = debtVal < 0 ? "#ef4444" : (debtVal > 0 ? "#10b981" : "#9ca3af");
 
             const transitVal = cachedBalances.Транзит || 0;
-            document.getElementById("sub-transit").innerText = transitVal + " €";
+            document.getElementById("sub-transit").innerText = Number(transitVal).toFixed(2) + " €";
 
             const totalNet = (cachedBalances.Мила || 0) + 
                              (cachedBalances.Банк || 0) + 
                              (cachedBalances.Руки || 0) + 
                              transitVal + 
                              debtVal;
-            document.getElementById("total-gold-amount").innerText = totalNet + " €";
+            document.getElementById("total-gold-amount").innerText = Number(totalNet).toFixed(2) + " €";
           }
         } catch (e) {
           showToast("Ошибка загрузки");
