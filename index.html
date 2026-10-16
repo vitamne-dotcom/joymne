@@ -28,4 +28,356 @@
     .circle-btn {
       width: 90px; height: 90px; border-radius: 50%;
       background: #161b22; border: 3px solid #30363d;
-      display: flex; flex-
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; color: #fff; font-weight: bold;
+    }
+    .circle-btn span { font-size: 12px; color: #8b949e; margin-top: 4px; font-weight: normal; }
+
+    /* Подсветка активных кругов */
+    .circle-joy { border-color: rgba(242, 201, 76, 0.4); }
+    .circle-joy.active { border-color: #f2c94c; background: rgba(242, 201, 76, 0.15); box-shadow: 0 0 20px rgba(242, 201, 76, 0.4); }
+
+    .circle-debt { border-color: rgba(235, 87, 87, 0.4); }
+    .circle-debt.active { border-color: #eb5757; background: rgba(235, 87, 87, 0.15); box-shadow: 0 0 20px rgba(235, 87, 87, 0.4); }
+
+    .circle-transit { border-color: rgba(108, 117, 125, 0.4); }
+    .circle-transit.active { border-color: #adb5bd; background: rgba(108, 117, 125, 0.2); box-shadow: 0 0 20px rgba(108, 117, 125, 0.4); }
+
+    .circle-mila { border-color: rgba(187, 134, 252, 0.4); }
+    .circle-mila.active { border-color: #bb86fc; background: rgba(187, 134, 252, 0.15); box-shadow: 0 0 20px rgba(187, 134, 252, 0.4); }
+
+    .circle-bank { border-color: rgba(47, 128, 237, 0.4); }
+    .circle-bank.active { border-color: #2f80ed; background: rgba(47, 128, 237, 0.15); box-shadow: 0 0 20px rgba(47, 128, 237, 0.4); }
+
+    .circle-hands { border-color: rgba(39, 174, 96, 0.4); }
+    .circle-hands.active { border-color: #27ae60; background: rgba(39, 174, 96, 0.15); box-shadow: 0 0 20px rgba(39, 174, 96, 0.4); }
+
+    /* Зона карточки */
+    .input-card { background: #161b22; padding: 20px; border-radius: 20px; border: 1px solid #30363d; }
+    textarea { width: 100%; padding: 12px; border: 1px solid #30363d; background: #0d1117; color: #fff; border-radius: 12px; font-size: 16px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
+    textarea::placeholder { color: #484f58; }
+
+    /* Панель доходов и расходов за месяц для Joy */
+    #joySummaryPanel { display: none; text-align: left; padding: 5px; margin-bottom: 15px; }
+    .summary-title { font-size: 13px; color: #8b949e; margin-bottom: 12px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 15px; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { color: #8b949e; }
+    .summary-value { font-weight: bold; }
+    .val-income { color: #238636; }
+    .val-expense { color: #eb5757; }
+
+    /* Интерфейс транзита */
+    #transitPanel { display: none; margin-bottom: 15px; }
+    .transit-circles-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; }
+    
+    .transit-circle {
+      width: 85px; height: 85px; border-radius: 50%;
+      color: #fff; border: 2px solid;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative;
+    }
+    
+    .transit-circle select {
+      background: transparent; color: #fff; border: none; font-size: 14px; font-weight: bold;
+      width: 100%; text-align: center; text-align-last: center; outline: none; cursor: pointer;
+      appearance: none; -webkit-appearance: none; -moz-appearance: none;
+      padding: 0 5px;
+    }
+    .transit-circle select option { background: #161b22; color: #fff; }
+
+    .transit-arrow-icon {
+      font-size: 10px; color: #aaa; margin-top: 2px; pointer-events: none;
+    }
+
+    .circle-from-box { 
+      border-color: rgba(235, 87, 87, 0.6); 
+      background: rgba(235, 87, 87, 0.08); 
+      box-shadow: 0 0 12px rgba(235, 87, 87, 0.15); 
+    }
+    .circle-to-box { 
+      border-color: rgba(47, 128, 237, 0.6); 
+      background: rgba(47, 128, 237, 0.08); 
+      box-shadow: 0 0 12px rgba(47, 128, 237, 0.15); 
+    }
+
+    .transit-amount { width: 100%; padding: 12px; background: #0d1117; color: #fff; border: 1px solid #30363d; border-radius: 12px; font-size: 16px; text-align: center; box-sizing: border-box; }
+    .transit-amount::placeholder { color: #484f58; }
+
+    /* Кнопки сохранения */
+    .actions { display: flex; gap: 10px; }
+    button.submit-btn { flex: 2; background: #238636; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button.photo-btn { flex: 1; background: #30363d; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+
+    #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #21262d; color: #fff; padding: 10px 20px; border-radius: 20px; display: none; font-size: 14px; border: 1px solid #30363d; z-index: 1000; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-text">joymne</div>
+
+  <!-- Пирамидка кругов -->
+  <div class="pyramid">
+    <div class="row">
+      <div class="circle-btn circle-joy" id="btn-Joy" onclick="selectCategory('Joy')">
+        Joy
+        <span id="balJoy">---</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="circle-btn circle-debt" id="btn-Долги" onclick="selectCategory('Долги')">
+        Долги
+        <span id="balDebts">---</span>
+      </div>
+      <div class="circle-btn circle-transit" id="btn-Транзит" onclick="selectCategory('Транзит')">
+        Транзит
+        <span id="balTransit">---</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="circle-btn circle-mila" id="btn-Мила" onclick="selectCategory('Мила')">
+        Мила
+        <span id="balMila">---</span>
+      </div>
+      <div class="circle-btn circle-bank" id="btn-Банк" onclick="selectCategory('Банк')">
+        Банк
+        <span id="balBank">---</span>
+      </div>
+      <div class="circle-btn circle-hands active" id="btn-Руки" onclick="selectCategory('Руки')">
+        Руки
+        <span id="balHands">---</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Карточка ввода -->
+  <div class="input-card">
+    
+    <div id="standardInput">
+      <textarea id="txInput" rows="2" placeholder="Например: 8 хлеб или получил 50..."></textarea>
+    </div>
+
+    <!-- Блок транзита -->
+    <div id="transitPanel">
+      <div class="transit-circles-row">
+        <div class="transit-circle circle-from-box">
+          <select id="walletFrom">
+            <option value="Руки">Руки</option>
+            <option value="Мила">Мила</option>
+            <option value="Банк">Банк</option>
+          </select>
+          <div class="transit-arrow-icon">▼</div>
+        </div>
+        <div style="font-size: 20px; color: #8b949e;">➔</div>
+        <div class="transit-circle circle-to-box">
+          <select id="walletTo">
+            <option value="">Копилка</option>
+            <option value="Мила">Мила</option>
+            <option value="Банк">Банк</option>
+            <option value="Руки">Руки</option>
+          </select>
+          <div class="transit-arrow-icon">▼</div>
+        </div>
+      </div>
+      <input type="text" id="transitAmount" class="transit-amount" placeholder="Сумма перевода (€)">
+    </div>
+
+    <!-- Панель Joy -->
+    <div id="joySummaryPanel">
+      <div class="summary-title">За текущий месяц</div>
+      <div class="summary-row">
+        <span class="summary-label">Общие доходы:</span>
+        <span class="summary-value val-income" id="monthlyIncome">0.00 €</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Общие расходы:</span>
+        <span class="summary-value val-expense" id="monthlyExpense">0.00 €</span>
+      </div>
+    </div>
+
+    <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;" onchange="handlePhoto(this)">
+
+    <div class="actions" id="actionButtons">
+      <button class="submit-btn" onclick="submitTransaction()">Сохранить</button>
+      <button class="photo-btn" id="photoBtn" onclick="document.getElementById('photoInput').click()">📷 Чек</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast">Сохранение...</div>
+
+<script>
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
+  
+  let activeCategory = "Руки"; 
+  let isSubmitting = false;
+  let savedBalances = {};
+
+  window.onload = function() {
+    loadBalances();
+    const savedMsg = sessionStorage.getItem("joymne_toast");
+    if (savedMsg) {
+      showToast(savedMsg);
+      sessionStorage.removeItem("joymne_toast");
+    }
+  };
+
+  function selectCategory(category) {
+    // Повторное нажатие на Joy возвращает Руки и сбрасывает балансы в прочерки
+    if (activeCategory === "Joy" && category === "Joy") {
+      activeCategory = "Руки";
+      document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById("btn-Руки").classList.add('active');
+      
+      renderDashes();
+
+      document.getElementById("standardInput").style.display = "block";
+      document.getElementById("transitPanel").style.display = "none";
+      document.getElementById("joySummaryPanel").style.display = "none";
+      document.getElementById("actionButtons").style.display = "flex";
+      return;
+    }
+
+    activeCategory = category;
+    
+    document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.getElementById("btn-" + category);
+    if (activeBtn) activeBtn.classList.add('active');
+
+    const standardInput = document.getElementById("standardInput");
+    const transitPanel = document.getElementById("transitPanel");
+    const joySummaryPanel = document.getElementById("joySummaryPanel");
+    const actionButtons = document.getElementById("actionButtons");
+
+    standardInput.style.display = "none";
+    transitPanel.style.display = "none";
+    joySummaryPanel.style.display = "none";
+    actionButtons.style.display = "flex";
+
+    if (category === "Joy") {
+      joySummaryPanel.style.display = "block";
+      actionButtons.style.display = "none"; 
+      renderBalances(savedBalances); // Показываем суммы в кружочках при нажатии на Joy
+    } else if (category === "Транзит") {
+      transitPanel.style.display = "block";
+      renderDashes();
+    } else {
+      standardInput.style.display = "block";
+      renderDashes();
+    }
+  }
+
+  function renderBalances(balances) {
+    const mila = balances["Мила"] || 0;
+    const bank = balances["Банк"] || 0;
+    const hands = balances["Руки"] || 0;
+    const debts = balances["Долги"] || 0;
+    const transit = balances["Транзит"] || 0;
+
+    document.getElementById("balMila").innerText = mila.toFixed(2) + " €";
+    document.getElementById("balBank").innerText = bank.toFixed(2) + " €";
+    document.getElementById("balHands").innerText = hands.toFixed(2) + " €";
+    document.getElementById("balDebts").innerText = debts.toFixed(2) + " €";
+    document.getElementById("balTransit").innerText = transit.toFixed(2) + " €";
+    
+    const total = mila + bank + hands + debts + transit;
+    document.getElementById("balJoy").innerText = total.toFixed(2) + " €";
+  }
+
+  function renderDashes() {
+    document.getElementById("balMila").innerText = "---";
+    document.getElementById("balBank").innerText = "---";
+    document.getElementById("balHands").innerText = "---";
+    document.getElementById("balDebts").innerText = "---";
+    document.getElementById("balTransit").innerText = "---";
+    document.getElementById("balJoy").innerText = "---";
+  }
+
+  async function loadBalances() {
+    try {
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=getBalances`);
+      const data = await res.json();
+      if (data.status === "success") {
+        savedBalances = data.balances || {};
+        document.getElementById("monthlyIncome").innerText = (data.monthlyIncome || 0).toFixed(2) + " €";
+        document.getElementById("monthlyExpense").innerText = (data.monthlyExpense || 0).toFixed(2) + " €";
+      }
+    } catch (e) {
+      console.error("Не удалось загрузить балансы", e);
+    }
+  }
+
+  async function submitTransaction(photoBase64 = null) {
+    if (isSubmitting || activeCategory === "Joy") return;
+
+    let finalDescription = "";
+
+    if (activeCategory === "Транзит") {
+      const fromWallet = document.getElementById("walletFrom").value;
+      const toWallet = document.getElementById("walletTo").value;
+      const amountVal = document.getElementById("transitAmount").value.trim();
+
+      if (!amountVal) {
+        alert("Введите сумму перевода!");
+        return;
+      }
+
+      if (toWallet) {
+        finalDescription = `Перевод из ${fromWallet} в ${toWallet} ${amountVal}`;
+      } else {
+        finalDescription = `Перевод из ${fromWallet} в Копилка (Сбережения) ${amountVal}`;
+      }
+    } else {
+      finalDescription = document.getElementById("txInput").value.trim();
+      if (!finalDescription && !photoBase64) {
+        alert("Введите описание или сумму!");
+        return;
+      }
+    }
+
+    isSubmitting = true;
+    showToast("Отправка данных...");
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ category: activeCategory, text: finalDescription, photo: photoBase64 }),
+        redirect: "follow"
+      });
+
+      const data = await response.json();
+      if (data.status === "source" || data.status === "success") {
+        sessionStorage.setItem("joymne_toast", "✓ Успешно сохранено!");
+        window.location.replace(window.location.pathname + "?t=" + Date.now());
+      } else {
+        alert("Ошибка сервера: " + (data.message || "Неизвестная ошибка"));
+        isSubmitting = false;
+      }
+    } catch (err) {
+      alert("Ошибка соединения с таблицей");
+      isSubmitting = false;
+    }
+  }
+
+  function handlePhoto(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        submitTransaction(e.target.result);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.innerText = msg;
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 3000);
+  }
+</script>
+
+</body>
+</html>
