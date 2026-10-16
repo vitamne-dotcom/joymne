@@ -182,4 +182,149 @@
       </div>
     </div>
 
-    <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;"
+    <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;" onchange="handlePhoto(this)">
+
+    <!-- Блок кнопок управления (скрывается на Joy) -->
+    <div class="actions" id="actionButtons">
+      <button class="submit-btn" onclick="submitTransaction()">Сохранить</button>
+      <button class="photo-btn" id="photoBtn" onclick="document.getElementById('photoInput').click()">📷 Чек</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast">Сохранение...</div>
+
+<script>
+  const APPS_SCRIPT_URL = "ВАШ_WEB_APP_URL_ЗДЕСЬ";
+  
+  let activeCategory = "Руки"; // По умолчанию Руки
+  let isSubmitting = false;
+
+  window.onload = function() {
+    loadBalances();
+    const savedMsg = sessionStorage.getItem("joymne_toast");
+    if (savedMsg) {
+      showToast(savedMsg);
+      sessionStorage.removeItem("joymne_toast");
+    }
+  };
+
+  function selectCategory(category, element) {
+    activeCategory = category;
+    document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+
+    const standardInput = document.getElementById("standardInput");
+    const transitPanel = document.getElementById("transitPanel");
+    const joySummaryPanel = document.getElementById("joySummaryPanel");
+    const actionButtons = document.getElementById("actionButtons");
+
+    // Сбрасываем видимость
+    standardInput.style.display = "none";
+    transitPanel.style.display = "none";
+    joySummaryPanel.style.display = "none";
+    actionButtons.style.display = "flex";
+
+    if (category === "Joy") {
+      joySummaryPanel.style.display = "block";
+      actionButtons.style.display = "none"; // Прячем кнопку сохранения на экране Joy
+    } else if (category === "Транзит") {
+      transitPanel.style.display = "block";
+    } else {
+      standardInput.style.display = "block";
+    }
+  }
+
+  async function loadBalances() {
+    try {
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=getBalances`);
+      const data = await res.json();
+      if (data.status === "success") {
+        document.getElementById("balMila").innerText = (data.balances["Мила"] || 0).toFixed(2) + " €";
+        document.getElementById("balBank").innerText = (data.balances["Банк"] || 0).toFixed(2) + " €";
+        document.getElementById("balHands").innerText = (data.balances["Руки"] || 0).toFixed(2) + " €";
+        document.getElementById("balDebts").innerText = (data.balances["Долги"] || 0).toFixed(2) + " €";
+        document.getElementById("balTransit").innerText = (data.balances["Транзит"] || 0).toFixed(2) + " €";
+        
+        // Пример вывода месячных общих сумм (если скрипт их передает, иначе нули)
+        document.getElementById("monthlyIncome").innerText = (data.monthlyIncome || 0).toFixed(2) + " €";
+        document.getElementById("monthlyExpense").innerText = (data.monthlyExpense || 0).toFixed(2) + " €";
+      }
+    } catch (e) {
+      console.error("Не удалось загрузить балансы", e);
+    }
+  }
+
+  async function submitTransaction(photoBase64 = null) {
+    if (isSubmitting || activeCategory === "Joy") return;
+
+    let finalDescription = "";
+
+    if (activeCategory === "Транзит") {
+      const fromWallet = document.getElementById("walletFrom").value;
+      const toWallet = document.getElementById("walletTo").value;
+      const amountVal = document.getElementById("transitAmount").value.trim();
+
+      if (!amountVal) {
+        alert("Введите сумму перевода!");
+        return;
+      }
+
+      if (toWallet) {
+        finalDescription = `Перевод из ${fromWallet} в ${toWallet} ${amountVal}`;
+      } else {
+        finalDescription = `Перевод из ${fromWallet} в Копилка (Сбережения) ${amountVal}`;
+      }
+    } else {
+      finalDescription = document.getElementById("txInput").value.trim();
+      if (!finalDescription && !photoBase64) {
+        alert("Введите описание или сумму!");
+        return;
+      }
+    }
+
+    isSubmitting = true;
+    showToast("Отправка данных...");
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ category: activeCategory, text: finalDescription, photo: photoBase64 }),
+        redirect: "follow"
+      });
+
+      const data = await response.json();
+      if (data.status === "success") {
+        sessionStorage.setItem("joymne_toast", "✓ Успешно сохранено!");
+        window.location.replace(window.location.pathname + "?t=" + Date.now());
+      } else {
+        alert("Ошибка сервера: " + (data.message || "Неизвестная ошибка"));
+        isSubmitting = false;
+      }
+    } catch (err) {
+      alert("Ошибка соединения с таблицей");
+      isSubmitting = false;
+    }
+  }
+
+  function handlePhoto(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        submitTransaction(e.target.result);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.innerText = msg;
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 3000);
+  }
+</script>
+
+</body>
+</html>
