@@ -64,8 +64,6 @@
     .summary-row:last-child { border-bottom: none; }
     .summary-label { color: #8b949e; }
     .summary-value { font-weight: bold; }
-    .val-income { color: #238636; }
-    .val-expense { color: #eb5757; }
 
     /* Интерфейс транзита */
     #transitPanel { display: none; margin-bottom: 15px; }
@@ -105,33 +103,33 @@
   <div class="pyramid">
     <!-- Вершина (Joy) -->
     <div class="row">
-      <div class="circle-btn circle-joy" onclick="selectCategory('Joy', this)">
+      <div class="circle-btn circle-joy" id="btn-Joy" onclick="selectCategory('Joy')">
         Joy
         <span id="balJoy">---</span>
       </div>
     </div>
     <!-- Второй ряд -->
     <div class="row">
-      <div class="circle-btn circle-debt" onclick="selectCategory('Долги', this)">
+      <div class="circle-btn circle-debt" id="btn-Долги" onclick="selectCategory('Долги')">
         Долги
         <span id="balDebts">---</span>
       </div>
-      <div class="circle-btn circle-transit" onclick="selectCategory('Транзит', this)">
+      <div class="circle-btn circle-transit" id="btn-Транзит" onclick="selectCategory('Транзит')">
         Транзит
         <span id="balTransit">---</span>
       </div>
     </div>
     <!-- Нижний ряд (Руки по умолчанию active) -->
     <div class="row">
-      <div class="circle-btn circle-mila" onclick="selectCategory('Мила', this)">
+      <div class="circle-btn circle-mila" id="btn-Мила" onclick="selectCategory('Мила')">
         Мила
         <span id="balMila">---</span>
       </div>
-      <div class="circle-btn circle-bank" onclick="selectCategory('Банк', this)">
+      <div class="circle-btn circle-bank" id="btn-Банк" onclick="selectCategory('Банк')">
         Банк
         <span id="balBank">---</span>
       </div>
-      <div class="circle-btn circle-hands active" onclick="selectCategory('Руки', this)">
+      <div class="circle-btn circle-hands active" id="btn-Руки" onclick="selectCategory('Руки')">
         Руки
         <span id="balHands">---</span>
       </div>
@@ -171,7 +169,7 @@
 
     <!-- Информационная панель Joy -->
     <div id="joySummaryPanel">
-      <div class="summary-title">Сводка балансов и месяц</div>
+      <div class="summary-title">Сводка балансов касс</div>
       <div class="summary-row"><span class="summary-label">Мила:</span> <span class="summary-value" id="sumMila">0.00 €</span></div>
       <div class="summary-row"><span class="summary-label">Банк:</span> <span class="summary-value" id="sumBank">0.00 €</span></div>
       <div class="summary-row"><span class="summary-label">Руки:</span> <span class="summary-value" id="sumHands">0.00 €</span></div>
@@ -207,17 +205,20 @@
     }
   };
 
-  function selectCategory(category, element) {
+  function selectCategory(category) {
     activeCategory = category;
+    
+    // Снимаем класс active со всех кружков и ставим на нужный по ID
     document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
-    element.classList.add('active');
+    const activeBtn = document.getElementById("btn-" + category);
+    if (activeBtn) activeBtn.classList.add('active');
 
     const standardInput = document.getElementById("standardInput");
     const transitPanel = document.getElementById("transitPanel");
     const joySummaryPanel = document.getElementById("joySummaryPanel");
     const actionButtons = document.getElementById("actionButtons");
 
-    // Сбрасываем видимость
+    // Сбрасываем видимость блоков
     standardInput.style.display = "none";
     transitPanel.style.display = "none";
     joySummaryPanel.style.display = "none";
@@ -286,4 +287,64 @@
 
       if (!amountVal) {
         alert("Введите сумму перевода!");
-        return
+        return;
+      }
+
+      if (toWallet) {
+        finalDescription = `Перевод из ${fromWallet} в ${toWallet} ${amountVal}`;
+      } else {
+        finalDescription = `Перевод из ${fromWallet} в Копилка (Сбережения) ${amountVal}`;
+      }
+    } else {
+      finalDescription = document.getElementById("txInput").value.trim();
+      if (!finalDescription && !photoBase64) {
+        alert("Введите описание или сумму!");
+        return;
+      }
+    }
+
+    isSubmitting = true;
+    showToast("Отправка данных...");
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ category: activeCategory, text: finalDescription, photo: photoBase64 }),
+        redirect: "follow"
+      });
+
+      const data = await response.json();
+      if (data.status === "success") {
+        sessionStorage.setItem("joymne_toast", "✓ Успешно сохранено!");
+        window.location.replace(window.location.pathname + "?t=" + Date.now());
+      } else {
+        alert("Ошибка сервера: " + (data.message || "Неизвестная ошибка"));
+        isSubmitting = false;
+      }
+    } catch (err) {
+      alert("Ошибка соединения с таблицей");
+      isSubmitting = false;
+    }
+  }
+
+  function handlePhoto(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        submitTransaction(e.target.result);
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.innerText = msg;
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 3000);
+  }
+</script>
+
+</body>
+</html>
