@@ -211,10 +211,13 @@
   };
 
   function selectCategory(category) {
+    // Повторное нажатие на Joy возвращает активную кассу "Руки" и сбрасывает балансы в кружочках в прочерки
     if (activeCategory === "Joy" && category === "Joy") {
       activeCategory = "Руки";
       document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
       document.getElementById("btn-Руки").classList.add('active');
+      
+      renderDashes();
 
       document.getElementById("standardInput").style.display = "block";
       document.getElementById("transitPanel").style.display = "none";
@@ -242,10 +245,13 @@
     if (category === "Joy") {
       joySummaryPanel.style.display = "block";
       actionButtons.style.display = "none"; 
+      renderBalances(savedBalances); // Показываем суммы касс при нажатии на Joy
     } else if (category === "Транзит") {
       transitPanel.style.display = "block";
+      renderDashes();
     } else {
       standardInput.style.display = "block";
+      renderDashes();
     }
   }
 
@@ -266,92 +272,15 @@
     document.getElementById("balJoy").innerText = total.toFixed(2) + " €";
   }
 
+  function renderDashes() {
+    document.getElementById("balMila").innerText = "---";
+    document.getElementById("balBank").innerText = "---";
+    document.getElementById("balHands").innerText = "---";
+    document.getElementById("balDebts").innerText = "---";
+    document.getElementById("balTransit").innerText = "---";
+    document.getElementById("balJoy").innerText = "---";
+  }
+
   async function loadBalances() {
     try {
-      const res = await fetch(`${APPS_SCRIPT_URL}?action=getBalances`);
-      const data = await res.json();
-      if (data.status === "success") {
-        savedBalances = data.balances || {};
-        renderBalances(savedBalances);
-        
-        document.getElementById("monthlyIncome").innerText = (data.monthlyIncome || 0).toFixed(2) + " €";
-        document.getElementById("monthlyExpense").innerText = (data.monthlyExpense || 0).toFixed(2) + " €";
-      }
-    } catch (e) {
-      console.error("Не удалось загрузить балансы", e);
-    }
-  }
-
-  async function submitTransaction(photoBase64 = null) {
-    if (isSubmitting || activeCategory === "Joy") return;
-
-    let finalDescription = "";
-
-    if (activeCategory === "Транзит") {
-      const fromWallet = document.getElementById("walletFrom").value;
-      const toWallet = document.getElementById("walletTo").value;
-      const amountVal = document.getElementById("transitAmount").value.trim();
-
-      if (!amountVal) {
-        alert("Введите сумму перевода!");
-        return;
-      }
-
-      if (toWallet) {
-        finalDescription = `Перевод из ${fromWallet} в ${toWallet} ${amountVal}`;
-      } else {
-        finalDescription = `Перевод из ${fromWallet} в Копилка (Сбережения) ${amountVal}`;
-      }
-    } else {
-      finalDescription = document.getElementById("txInput").value.trim();
-      if (!finalDescription && !photoBase64) {
-        alert("Введите описание или сумму!");
-        return;
-      }
-    }
-
-    isSubmitting = true;
-    showToast("Отправка данных...");
-
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ category: activeCategory, text: finalDescription, photo: photoBase64 }),
-        redirect: "follow"
-      });
-
-      const data = await response.json();
-      if (data.status === "success") {
-        sessionStorage.setItem("joymne_toast", "✓ Успешно сохранено!");
-        window.location.replace(window.location.pathname + "?t=" + Date.now());
-      } else {
-        alert("Ошибка сервера: " + (data.message || "Неизвестная ошибка"));
-        isSubmitting = false;
-      }
-    } catch (err) {
-      alert("Ошибка соединения с таблицей");
-      isSubmitting = false;
-    }
-  }
-
-  function handlePhoto(input) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        submitTransaction(e.target.result);
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  function showToast(msg) {
-    const toast = document.getElementById("toast");
-    toast.innerText = msg;
-    toast.style.display = "block";
-    setTimeout(() => { toast.style.display = "none"; }, 3000);
-  }
-</script>
-
-</body>
-</html>
+      const res =
