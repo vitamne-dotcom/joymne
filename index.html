@@ -224,7 +224,6 @@
   };
 
   function selectCategory(category) {
-    // Повторное нажатие на Joy возвращает Руки и сбрасывает балансы в прочерки
     if (activeCategory === "Joy" && category === "Joy") {
       activeCategory = "Руки";
       document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
@@ -258,7 +257,7 @@
     if (category === "Joy") {
       joySummaryPanel.style.display = "block";
       actionButtons.style.display = "none"; 
-      renderBalances(savedBalances); // Показываем суммы в кружочках при нажатии на Joy
+      renderBalances(savedBalances);
     } else if (category === "Транзит") {
       transitPanel.style.display = "block";
       renderDashes();
@@ -348,7 +347,7 @@
       });
 
       const data = await response.json();
-      if (data.status === "source" || data.status === "success") {
+      if (data.status === "success") {
         sessionStorage.setItem("joymne_toast", "✓ Успешно сохранено!");
         window.location.replace(window.location.pathname + "?t=" + Date.now());
       } else {
