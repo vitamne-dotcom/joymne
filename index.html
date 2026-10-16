@@ -31,7 +31,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.2s; color: #fff; font-weight: bold;
     }
-    .circle-btn span { font-size: 11px; color: #8b949e; margin-top: 4px; font-weight: normal; }
+    .circle-btn span { font-size: 12px; color: #8b949e; margin-top: 4px; font-weight: normal; }
 
     /* Подсветка активных кругов */
     .circle-joy { border-color: rgba(242, 201, 76, 0.4); }
@@ -57,13 +57,15 @@
     textarea { width: 100%; padding: 12px; border: 1px solid #30363d; background: #0d1117; color: #fff; border-radius: 12px; font-size: 16px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
     textarea::placeholder { color: #484f58; }
 
-    /* Панель сводки Joy */
+    /* Панель доходов/расходов за месяц для Joy */
     #joySummaryPanel { display: none; text-align: left; padding: 5px; margin-bottom: 15px; }
-    .summary-title { font-size: 13px; color: #8b949e; margin-bottom: 10px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #21262d; font-size: 14px; }
+    .summary-title { font-size: 13px; color: #8b949e; margin-bottom: 12px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 15px; }
     .summary-row:last-child { border-bottom: none; }
     .summary-label { color: #8b949e; }
     .summary-value { font-weight: bold; }
+    .val-income { color: #238636; }
+    .val-expense { color: #eb5757; }
 
     /* Интерфейс транзита */
     #transitPanel { display: none; margin-bottom: 15px; }
@@ -101,14 +103,12 @@
 
   <!-- Пирамидка кругов -->
   <div class="pyramid">
-    <!-- Вершина (Joy) -->
     <div class="row">
       <div class="circle-btn circle-joy" id="btn-Joy" onclick="selectCategory('Joy')">
         Joy
         <span id="balJoy">---</span>
       </div>
     </div>
-    <!-- Второй ряд -->
     <div class="row">
       <div class="circle-btn circle-debt" id="btn-Долги" onclick="selectCategory('Долги')">
         Долги
@@ -119,7 +119,6 @@
         <span id="balTransit">---</span>
       </div>
     </div>
-    <!-- Нижний ряд (Руки по умолчанию active) -->
     <div class="row">
       <div class="circle-btn circle-mila" id="btn-Мила" onclick="selectCategory('Мила')">
         Мила
@@ -139,12 +138,10 @@
   <!-- Карточка ввода -->
   <div class="input-card">
     
-    <!-- Стандартный ввод (для касс) -->
     <div id="standardInput">
       <textarea id="txInput" rows="2" placeholder="Например: 8 хлеб или получил 50..."></textarea>
     </div>
 
-    <!-- Блок транзита -->
     <div id="transitPanel">
       <div class="transit-circles-row">
         <div class="transit-circle circle-from-box">
@@ -167,19 +164,20 @@
       <input type="text" id="transitAmount" class="transit-amount" placeholder="Сумма перевода (€)">
     </div>
 
-    <!-- Информационная панель Joy -->
     <div id="joySummaryPanel">
-      <div class="summary-title">Сводка балансов касс</div>
-      <div class="summary-row"><span class="summary-label">Мила:</span> <span class="summary-value" id="sumMila">0.00 €</span></div>
-      <div class="summary-row"><span class="summary-label">Банк:</span> <span class="summary-value" id="sumBank">0.00 €</span></div>
-      <div class="summary-row"><span class="summary-label">Руки:</span> <span class="summary-value" id="sumHands">0.00 €</span></div>
-      <div class="summary-row"><span class="summary-label">Долги:</span> <span class="summary-value" id="sumDebts">0.00 €</span></div>
-      <div class="summary-row"><span class="summary-label">Транзит:</span> <span class="summary-value" id="sumTransit">0.00 €</span></div>
+      <div class="summary-title">За текущий месяц</div>
+      <div class="summary-row">
+        <span class="summary-label">Общие доходы:</span>
+        <span class="summary-value val-income" id="monthlyIncome">0.00 €</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Общие расходы:</span>
+        <span class="summary-value val-expense" id="monthlyExpense">0.00 €</span>
+      </div>
     </div>
 
     <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;" onchange="handlePhoto(this)">
 
-    <!-- Блок кнопок управления (скрывается только на Joy) -->
     <div class="actions" id="actionButtons">
       <button class="submit-btn" onclick="submitTransaction()">Сохранить</button>
       <button class="photo-btn" id="photoBtn" onclick="document.getElementById('photoInput').click()">📷 Чек</button>
@@ -192,9 +190,8 @@
 <script>
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
   
-  let activeCategory = "Руки"; // По умолчанию Руки
+  let activeCategory = "Руки"; 
   let isSubmitting = false;
-  let cachedBalances = {};
 
   window.onload = function() {
     loadBalances();
@@ -208,7 +205,6 @@
   function selectCategory(category) {
     activeCategory = category;
     
-    // Снимаем класс active со всех кружков и ставим на нужный по ID
     document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
     const activeBtn = document.getElementById("btn-" + category);
     if (activeBtn) activeBtn.classList.add('active');
@@ -218,7 +214,6 @@
     const joySummaryPanel = document.getElementById("joySummaryPanel");
     const actionButtons = document.getElementById("actionButtons");
 
-    // Сбрасываем видимость блоков
     standardInput.style.display = "none";
     transitPanel.style.display = "none";
     joySummaryPanel.style.display = "none";
@@ -226,8 +221,7 @@
 
     if (category === "Joy") {
       joySummaryPanel.style.display = "block";
-      actionButtons.style.display = "none"; // Прячем кнопки ввода на экране Joy
-      updateJoySummary();
+      actionButtons.style.display = "none"; 
     } else if (category === "Транзит") {
       transitPanel.style.display = "block";
     } else {
@@ -240,13 +234,13 @@
       const res = await fetch(`${APPS_SCRIPT_URL}?action=getBalances`);
       const data = await res.json();
       if (data.status === "success") {
-        cachedBalances = data.balances || {};
+        const balances = data.balances || {};
         
-        const mila = cachedBalances["Мила"] || 0;
-        const bank = cachedBalances["Банк"] || 0;
-        const hands = cachedBalances["Руки"] || 0;
-        const debts = cachedBalances["Долги"] || 0;
-        const transit = cachedBalances["Транзит"] || 0;
+        const mila = balances["Мила"] || 0;
+        const bank = balances["Банк"] || 0;
+        const hands = balances["Руки"] || 0;
+        const debts = balances["Долги"] || 0;
+        const transit = balances["Транзит"] || 0;
 
         document.getElementById("balMila").innerText = mila.toFixed(2) + " €";
         document.getElementById("balBank").innerText = bank.toFixed(2) + " €";
@@ -254,25 +248,15 @@
         document.getElementById("balDebts").innerText = debts.toFixed(2) + " €";
         document.getElementById("balTransit").innerText = transit.toFixed(2) + " €";
         
-        // Общий баланс на вершине Joy
         const total = mila + bank + hands + debts + transit;
         document.getElementById("balJoy").innerText = total.toFixed(2) + " €";
 
-        if (activeCategory === "Joy") {
-          updateJoySummary();
-        }
+        document.getElementById("monthlyIncome").innerText = (data.monthlyIncome || 0).toFixed(2) + " €";
+        document.getElementById("monthlyExpense").innerText = (data.monthlyExpense || 0).toFixed(2) + " €";
       }
     } catch (e) {
       console.error("Не удалось загрузить балансы", e);
     }
-  }
-
-  function updateJoySummary() {
-    document.getElementById("sumMila").innerText = (cachedBalances["Мила"] || 0).toFixed(2) + " €";
-    document.getElementById("sumBank").innerText = (cachedBalances["Банк"] || 0).toFixed(2) + " €";
-    document.getElementById("sumHands").innerText = (cachedBalances["Руки"] || 0).toFixed(2) + " €";
-    document.getElementById("sumDebts").innerText = (cachedBalances["Долги"] || 0).toFixed(2) + " €";
-    document.getElementById("sumTransit").innerText = (cachedBalances["Транзит"] || 0).toFixed(2) + " €";
   }
 
   async function submitTransaction(photoBase64 = null) {
