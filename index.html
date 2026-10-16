@@ -19,9 +19,8 @@
     .container { width: 100%; max-width: 400px; text-align: center; }
     
     .header-text { color: #8c9bae; font-size: 16px; margin-bottom: 25px; }
-    .header-text span { color: #f2c94c; font-weight: bold; }
 
-    /* Пирамидка кругов (как на вашем скриншоте) */
+    /* Пирамидка кругов */
     .pyramid { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 25px; }
     .row { display: flex; gap: 20px; justify-content: center; width: 100%; }
 
@@ -34,29 +33,51 @@
     }
     .circle-btn span { font-size: 11px; color: #8b949e; margin-top: 4px; font-weight: normal; }
 
-    /* Цвета кругов */
-    .circle-joy { border-color: #f2c94c; box-shadow: 0 0 15px rgba(242, 201, 76, 0.3); }
-    .circle-debt { border-color: #eb5757; box-shadow: 0 0 15px rgba(235, 87, 87, 0.3); }
-    .circle-transit { border-color: #6c757d; box-shadow: 0 0 15px rgba(108, 117, 125, 0.3); }
-    .circle-mila { border-color: #bb86fc; box-shadow: 0 0 15px rgba(187, 134, 252, 0.3); }
-    .circle-bank { border-color: #2f80ed; box-shadow: 0 0 15px rgba(47, 128, 237, 0.3); }
-    .circle-hands { border-color: #27ae60; box-shadow: 0 0 15px rgba(39, 174, 96, 0.3); }
+    /* Цвета и подсветка неактивных/активных кругов */
+    .circle-joy { border-color: rgba(242, 201, 76, 0.4); }
+    .circle-joy.active { border-color: #f2c94c; background: rgba(242, 201, 76, 0.15); box-shadow: 0 0 20px rgba(242, 201, 76, 0.4); }
 
-    .circle-btn.active { transform: scale(1.05); background: #21262d; }
+    .circle-debt { border-color: rgba(235, 87, 87, 0.4); }
+    .circle-debt.active { border-color: #eb5757; background: rgba(235, 87, 87, 0.15); box-shadow: 0 0 20px rgba(235, 87, 87, 0.4); }
+
+    .circle-transit { border-color: rgba(108, 117, 125, 0.4); }
+    .circle-transit.active { border-color: #adb5bd; background: rgba(108, 117, 125, 0.2); box-shadow: 0 0 20px rgba(108, 117, 125, 0.4); }
+
+    .circle-mila { border-color: rgba(187, 134, 252, 0.4); }
+    .circle-mila.active { border-color: #bb86fc; background: rgba(187, 134, 252, 0.15); box-shadow: 0 0 20px rgba(187, 134, 252, 0.4); }
+
+    .circle-bank { border-color: rgba(47, 128, 237, 0.4); }
+    .circle-bank.active { border-color: #2f80ed; background: rgba(47, 128, 237, 0.15); box-shadow: 0 0 20px rgba(47, 128, 237, 0.4); }
+
+    .circle-hands { border-color: rgba(39, 174, 96, 0.4); }
+    .circle-hands.active { border-color: #27ae60; background: rgba(39, 174, 96, 0.15); box-shadow: 0 0 20px rgba(39, 174, 96, 0.4); }
 
     /* Зона ввода */
     .input-card { background: #161b22; padding: 20px; border-radius: 20px; border: 1px solid #30363d; }
     textarea { width: 100%; padding: 12px; border: 1px solid #30363d; background: #0d1117; color: #fff; border-radius: 12px; font-size: 16px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
     textarea::placeholder { color: #484f58; }
 
-    /* Интерфейс транзита */
+    /* Интерфейс транзита (круглые селекторы без текста ИЗ/В) */
     #transitPanel { display: none; margin-bottom: 15px; }
-    .transit-selectors { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-    .transit-box { flex: 1; background: #0d1117; padding: 10px; border-radius: 12px; border: 1px solid #30363d; text-align: center; }
-    .transit-box label { display: block; font-size: 12px; margin-bottom: 5px; font-weight: bold; }
-    .transit-box select { width: 100%; background: #161b22; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 8px; font-size: 14px; }
+    .transit-circles-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; }
     
+    .transit-circle {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: #0d1117; color: #fff; border: 3px solid #30363d;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .transit-circle select {
+      background: transparent; color: #fff; border: none; font-size: 13px; font-weight: bold;
+      width: 100%; text-align: center; text-align-last: center; outline: none; cursor: pointer;
+    }
+    .transit-circle select option { background: #161b22; color: #fff; }
+
+    /* Цвета кружков транзита */
+    .circle-from-box { border-color: #eb5757; box-shadow: 0 0 10px rgba(235, 87, 87, 0.3); }
+    .circle-to-box { border-color: #2f80ed; box-shadow: 0 0 10px rgba(47, 128, 237, 0.3); }
+
     .transit-amount { width: 100%; padding: 12px; background: #0d1117; color: #fff; border: 1px solid #30363d; border-radius: 12px; font-size: 16px; text-align: center; box-sizing: border-box; }
+    .transit-amount::placeholder { color: #484f58; }
 
     /* Кнопки сохранения */
     .actions { display: flex; gap: 10px; }
@@ -75,33 +96,33 @@
   <div class="pyramid">
     <!-- Вершина -->
     <div class="row">
-      <div class="circle-btn circle-joy" onclick="selectCategory('Joy')">
+      <div class="circle-btn circle-joy" onclick="selectCategory('Joy', this)">
         Joy
         <span id="balJoy">---</span>
       </div>
     </div>
     <!-- Второй ряд -->
     <div class="row">
-      <div class="circle-btn circle-debt" onclick="selectCategory('Долги')">
+      <div class="circle-btn circle-debt" onclick="selectCategory('Долги', this)">
         Долги
         <span id="balDebts">---</span>
       </div>
-      <div class="circle-btn circle-transit" onclick="selectCategory('Транзит')">
+      <div class="circle-btn circle-transit" onclick="selectCategory('Транзит', this)">
         Транзит
         <span id="balTransit">---</span>
       </div>
     </div>
-    <!-- Нижний ряд -->
+    <!-- Нижний ряд (Руки по умолчанию active) -->
     <div class="row">
-      <div class="circle-btn circle-mila active" onclick="selectCategory('Мила')">
+      <div class="circle-btn circle-mila" onclick="selectCategory('Мила', this)">
         Мила
         <span id="balMila">---</span>
       </div>
-      <div class="circle-btn circle-bank" onclick="selectCategory('Банк')">
+      <div class="circle-btn circle-bank" onclick="selectCategory('Банк', this)">
         Банк
         <span id="balBank">---</span>
       </div>
-      <div class="circle-btn circle-hands" onclick="selectCategory('Руки')">
+      <div class="circle-btn circle-hands active" onclick="selectCategory('Руки', this)">
         Руки
         <span id="balHands">---</span>
       </div>
@@ -116,19 +137,18 @@
       <textarea id="txInput" rows="2" placeholder="Например: 8 хлеб или получил 50..."></textarea>
     </div>
 
-    <!-- Специальный блок Транзита (ИЗ и В с суммой) -->
+    <!-- Специальный блок Транзита (кружки выбора без лишнего текста) -->
     <div id="transitPanel">
-      <div class="transit-selectors">
-        <div class="transit-box" style="border-color: #eb5757;">
-          <label style="color: #eb5757;">ИЗ</label>
+      <div class="transit-circles-row">
+        <div class="transit-circle circle-from-box">
           <select id="walletFrom">
+            <option value="Руки">Руки</option>
             <option value="Мила">Мила</option>
             <option value="Банк">Банк</option>
-            <option value="Руки">Руки</option>
           </select>
         </div>
-        <div class="transit-box" style="border-color: #2f80ed;">
-          <label style="color: #2f80ed;">В</label>
+        <div style="font-size: 20px; color: #8b949e;">➔</div>
+        <div class="transit-circle circle-to-box">
           <select id="walletTo">
             <option value="">Копилка</option>
             <option value="Мила">Мила</option>
@@ -154,7 +174,7 @@
 <script>
   const APPS_SCRIPT_URL = "ВАШ_WEB_APP_URL_ЗДЕСЬ";
   
-  let activeCategory = "Мила";
+  let activeCategory = "Руки"; // По умолчанию Руки
   let isSubmitting = false;
 
   window.onload = function() {
@@ -166,10 +186,10 @@
     }
   };
 
-  function selectCategory(category) {
+  function selectCategory(category, element) {
     activeCategory = category;
     document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    element.classList.add('active');
 
     const standardInput = document.getElementById("standardInput");
     const transitPanel = document.getElementById("transitPanel");
