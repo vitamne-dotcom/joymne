@@ -33,7 +33,7 @@
     }
     .circle-btn span { font-size: 11px; color: #8b949e; margin-top: 4px; font-weight: normal; }
 
-    /* Цвета и подсветка активных кругов */
+    /* Подсветка активных кругов */
     .circle-joy { border-color: rgba(242, 201, 76, 0.4); }
     .circle-joy.active { border-color: #f2c94c; background: rgba(242, 201, 76, 0.15); box-shadow: 0 0 20px rgba(242, 201, 76, 0.4); }
 
@@ -52,15 +52,15 @@
     .circle-hands { border-color: rgba(39, 174, 96, 0.4); }
     .circle-hands.active { border-color: #27ae60; background: rgba(39, 174, 96, 0.15); box-shadow: 0 0 20px rgba(39, 174, 96, 0.4); }
 
-    /* Зона ввода */
+    /* Зона карточки */
     .input-card { background: #161b22; padding: 20px; border-radius: 20px; border: 1px solid #30363d; }
     textarea { width: 100%; padding: 12px; border: 1px solid #30363d; background: #0d1117; color: #fff; border-radius: 12px; font-size: 16px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
     textarea::placeholder { color: #484f58; }
 
     /* Панель сводки Joy */
-    #joySummaryPanel { display: none; text-align: left; padding: 5px; }
-    .summary-title { font-size: 14px; color: #8b949e; margin-bottom: 12px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 15px; }
+    #joySummaryPanel { display: none; text-align: left; padding: 5px; margin-bottom: 15px; }
+    .summary-title { font-size: 13px; color: #8b949e; margin-bottom: 10px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #21262d; font-size: 14px; }
     .summary-row:last-child { border-bottom: none; }
     .summary-label { color: #8b949e; }
     .summary-value { font-weight: bold; }
@@ -138,7 +138,7 @@
     </div>
   </div>
 
-  <!-- Карточка ввода / сводки -->
+  <!-- Карточка ввода -->
   <div class="input-card">
     
     <!-- Стандартный ввод (для касс) -->
@@ -171,20 +171,17 @@
 
     <!-- Информационная панель Joy -->
     <div id="joySummaryPanel">
-      <div class="summary-title">Общий итог за текущий месяц</div>
-      <div class="summary-row">
-        <span class="summary-label">Общие доходы:</span>
-        <span class="summary-value val-income" id="monthlyIncome">0.00 €</span>
-      </div>
-      <div class="summary-row">
-        <span class="summary-label">Общие расходы:</span>
-        <span class="summary-value val-expense" id="monthlyExpense">0.00 €</span>
-      </div>
+      <div class="summary-title">Сводка балансов и месяц</div>
+      <div class="summary-row"><span class="summary-label">Мила:</span> <span class="summary-value" id="sumMila">0.00 €</span></div>
+      <div class="summary-row"><span class="summary-label">Банк:</span> <span class="summary-value" id="sumBank">0.00 €</span></div>
+      <div class="summary-row"><span class="summary-label">Руки:</span> <span class="summary-value" id="sumHands">0.00 €</span></div>
+      <div class="summary-row"><span class="summary-label">Долги:</span> <span class="summary-value" id="sumDebts">0.00 €</span></div>
+      <div class="summary-row"><span class="summary-label">Транзит:</span> <span class="summary-value" id="sumTransit">0.00 €</span></div>
     </div>
 
     <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;" onchange="handlePhoto(this)">
 
-    <!-- Блок кнопок управления (скрывается на Joy) -->
+    <!-- Блок кнопок управления (скрывается только на Joy) -->
     <div class="actions" id="actionButtons">
       <button class="submit-btn" onclick="submitTransaction()">Сохранить</button>
       <button class="photo-btn" id="photoBtn" onclick="document.getElementById('photoInput').click()">📷 Чек</button>
@@ -199,6 +196,7 @@
   
   let activeCategory = "Руки"; // По умолчанию Руки
   let isSubmitting = false;
+  let cachedBalances = {};
 
   window.onload = function() {
     loadBalances();
@@ -227,7 +225,8 @@
 
     if (category === "Joy") {
       joySummaryPanel.style.display = "block";
-      actionButtons.style.display = "none"; // Прячем кнопку сохранения на экране Joy
+      actionButtons.style.display = "none"; // Прячем кнопки ввода на экране Joy
+      updateJoySummary();
     } else if (category === "Транзит") {
       transitPanel.style.display = "block";
     } else {
@@ -240,19 +239,39 @@
       const res = await fetch(`${APPS_SCRIPT_URL}?action=getBalances`);
       const data = await res.json();
       if (data.status === "success") {
-        document.getElementById("balMila").innerText = (data.balances["Мила"] || 0).toFixed(2) + " €";
-        document.getElementById("balBank").innerText = (data.balances["Банк"] || 0).toFixed(2) + " €";
-        document.getElementById("balHands").innerText = (data.balances["Руки"] || 0).toFixed(2) + " €";
-        document.getElementById("balDebts").innerText = (data.balances["Долги"] || 0).toFixed(2) + " €";
-        document.getElementById("balTransit").innerText = (data.balances["Транзит"] || 0).toFixed(2) + " €";
+        cachedBalances = data.balances || {};
         
-        // Пример вывода месячных общих сумм (если скрипт их передает, иначе нули)
-        document.getElementById("monthlyIncome").innerText = (data.monthlyIncome || 0).toFixed(2) + " €";
-        document.getElementById("monthlyExpense").innerText = (data.monthlyExpense || 0).toFixed(2) + " €";
+        const mila = cachedBalances["Мила"] || 0;
+        const bank = cachedBalances["Банк"] || 0;
+        const hands = cachedBalances["Руки"] || 0;
+        const debts = cachedBalances["Долги"] || 0;
+        const transit = cachedBalances["Транзит"] || 0;
+
+        document.getElementById("balMila").innerText = mila.toFixed(2) + " €";
+        document.getElementById("balBank").innerText = bank.toFixed(2) + " €";
+        document.getElementById("balHands").innerText = hands.toFixed(2) + " €";
+        document.getElementById("balDebts").innerText = debts.toFixed(2) + " €";
+        document.getElementById("balTransit").innerText = transit.toFixed(2) + " €";
+        
+        // Общий баланс на вершине Joy
+        const total = mila + bank + hands + debts + transit;
+        document.getElementById("balJoy").innerText = total.toFixed(2) + " €";
+
+        if (activeCategory === "Joy") {
+          updateJoySummary();
+        }
       }
     } catch (e) {
       console.error("Не удалось загрузить балансы", e);
     }
+  }
+
+  function updateJoySummary() {
+    document.getElementById("sumMila").innerText = (cachedBalances["Мила"] || 0).toFixed(2) + " €";
+    document.getElementById("sumBank").innerText = (cachedBalances["Банк"] || 0).toFixed(2) + " €";
+    document.getElementById("sumHands").innerText = (cachedBalances["Руки"] || 0).toFixed(2) + " €";
+    document.getElementById("sumDebts").innerText = (cachedBalances["Долги"] || 0).toFixed(2) + " €";
+    document.getElementById("sumTransit").innerText = (cachedBalances["Транзит"] || 0).toFixed(2) + " €";
   }
 
   async function submitTransaction(photoBase64 = null) {
@@ -267,64 +286,4 @@
 
       if (!amountVal) {
         alert("Введите сумму перевода!");
-        return;
-      }
-
-      if (toWallet) {
-        finalDescription = `Перевод из ${fromWallet} в ${toWallet} ${amountVal}`;
-      } else {
-        finalDescription = `Перевод из ${fromWallet} в Копилка (Сбережения) ${amountVal}`;
-      }
-    } else {
-      finalDescription = document.getElementById("txInput").value.trim();
-      if (!finalDescription && !photoBase64) {
-        alert("Введите описание или сумму!");
-        return;
-      }
-    }
-
-    isSubmitting = true;
-    showToast("Отправка данных...");
-
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ category: activeCategory, text: finalDescription, photo: photoBase64 }),
-        redirect: "follow"
-      });
-
-      const data = await response.json();
-      if (data.status === "success") {
-        sessionStorage.setItem("joymne_toast", "✓ Успешно сохранено!");
-        window.location.replace(window.location.pathname + "?t=" + Date.now());
-      } else {
-        alert("Ошибка сервера: " + (data.message || "Неизвестная ошибка"));
-        isSubmitting = false;
-      }
-    } catch (err) {
-      alert("Ошибка соединения с таблицей");
-      isSubmitting = false;
-    }
-  }
-
-  function handlePhoto(input) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        submitTransaction(e.target.result);
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  function showToast(msg) {
-    const toast = document.getElementById("toast");
-    toast.innerText = msg;
-    toast.style.display = "block";
-    setTimeout(() => { toast.style.display = "none"; }, 3000);
-  }
-</script>
-
-</body>
-</html>
+        return
