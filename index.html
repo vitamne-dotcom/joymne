@@ -164,7 +164,7 @@
       <input type="text" id="transitAmount" class="transit-amount" placeholder="Сумма перевода (€)">
     </div>
 
-    <!-- Информационная панель Joy (только доходы и расходы за текущий месяц) -->
+    <!-- Панель Joy: только приходы и расходы за текущий месяц -->
     <div id="joySummaryPanel">
       <div class="summary-title">За текущий месяц</div>
       <div class="summary-row">
@@ -193,6 +193,9 @@
   
   let activeCategory = "Руки"; 
   let isSubmitting = false;
+  let savedBalances = {};
+  let savedMonthlyIncome = 0;
+  let savedMonthlyExpense = 0;
 
   window.onload = function() {
     loadBalances();
@@ -204,9 +207,25 @@
   };
 
   function selectCategory(category) {
-    // Если повторно нажимаем на Joy — возвращаем по умолчанию "Руки" и скрываем сводку
+    // Повторное нажатие на Joy прячет сводку и возвращает прочерки в кружочки
     if (activeCategory === "Joy" && category === "Joy") {
-      category = "Руки";
+      activeCategory = "Руки";
+      document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById("btn-Руки").classList.add('active');
+      
+      // Сбрасываем балансы на прочерки
+      document.getElementById("balMila").innerText = "---";
+      document.getElementById("balBank").innerText = "---";
+      document.getElementById("balHands").innerText = "---";
+      document.getElementById("balDebts").innerText = "---";
+      document.getElementById("balTransit").innerText = "---";
+      document.getElementById("balJoy").innerText = "---";
+
+      document.getElementById("standardInput").style.display = "block";
+      document.getElementById("transitPanel").style.display = "none";
+      document.getElementById("joySummaryPanel").style.display = "none";
+      document.getElementById("actionButtons").style.display = "flex";
+      return;
     }
 
     activeCategory = category;
@@ -228,11 +247,42 @@
     if (category === "Joy") {
       joySummaryPanel.style.display = "block";
       actionButtons.style.display = "none"; 
+      
+      // Показываем реальные балансы касс в кружочках при открытии Joy
+      renderBalances(savedBalances);
     } else if (category === "Транзит") {
       transitPanel.style.display = "block";
+      renderDashes();
     } else {
       standardInput.style.display = "block";
+      renderDashes();
     }
+  }
+
+  function renderBalances(balances) {
+    const mila = balances["Мила"] || 0;
+    const bank = balances["Банк"] || 0;
+    const hands = balances["Руки"] || 0;
+    const debts = balances["Долги"] || 0;
+    const transit = balances["Транзит"] || 0;
+
+    document.getElementById("balMila").innerText = mila.toFixed(2) + " €";
+    document.getElementById("balBank").innerText = bank.toFixed(2) + " €";
+    document.getElementById("balHands").innerText = hands.toFixed(2) + " €";
+    document.getElementById("balDebts").innerText = debts.toFixed(2) + " €";
+    document.getElementById("balTransit").innerText = transit.toFixed(2) + " €";
+    
+    const total = mila + bank + hands + debts + transit;
+    document.getElementById("balJoy").innerText = total.toFixed(2) + " €";
+  }
+
+  function renderDashes() {
+    document.getElementById("balMila").innerText = "---";
+    document.getElementById("balBank").innerText = "---";
+    document.getElementById("balHands").innerText = "---";
+    document.getElementById("balDebts").innerText = "---";
+    document.getElementById("balTransit").innerText = "---";
+    document.getElementById("balJoy").innerText = "---";
   }
 
   async function loadBalances() {
@@ -240,25 +290,17 @@
       const res = await fetch(`${APPS_SCRIPT_URL}?action=getBalances`);
       const data = await res.json();
       if (data.status === "success") {
-        const balances = data.balances || {};
-        
-        const mila = balances["Мила"] || 0;
-        const bank = balances["Банк"] || 0;
-        const hands = balances["Руки"] || 0;
-        const debts = balances["Долги"] || 0;
-        const transit = balances["Транзит"] || 0;
+        savedBalances = data.balances || {};
+        savedMonthlyIncome = data.monthlyIncome || 0;
+        savedMonthlyExpense = data.monthlyExpense || 0;
 
-        document.getElementById("balMila").innerText = mila.toFixed(2) + " €";
-        document.getElementById("balBank").innerText = bank.toFixed(2) + " €";
-        document.getElementById("balHands").innerText = hands.toFixed(2) + " €";
-        document.getElementById("balDebts").innerText = debts.toFixed(2) + " €";
-        document.getElementById("balTransit").innerText = transit.toFixed(2) + " €";
-        
-        const total = mila + bank + hands + debts + transit;
-        document.getElementById("balJoy").innerText = total.toFixed(2) + " €";
+        document.getElementById("monthlyIncome").innerText = savedMonthlyIncome.toFixed(2) + " €";
+        document.getElementById("monthlyExpense").innerText = savedMonthlyExpense.toFixed(2) + " €";
 
-        document.getElementById("monthlyIncome").innerText = (data.monthlyIncome || 0).toFixed(2) + " €";
-        document.getElementById("monthlyExpense").innerText = (data.monthlyExpense || 0).toFixed(2) + " €";
+        // Если при загрузке страницы активен Joy, сразу отрисуем балансы
+        if (activeCategory === "Joy") {
+          renderBalances(savedBalances);
+        }
       }
     } catch (e) {
       console.error("Не удалось загрузить балансы", e);
