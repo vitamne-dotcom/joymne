@@ -57,14 +57,14 @@
     textarea { width: 100%; padding: 12px; border: 1px solid #30363d; background: #0d1117; color: #fff; border-radius: 12px; font-size: 16px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
     textarea::placeholder { color: #484f58; }
 
-    /* Панель Joy: доходы слева, расходы справа в одну строку */
+    /* Панель Joy */
     #joySummaryPanel { display: none; padding: 5px 0 15px 0; }
     .summary-title { font-size: 13px; color: #8b949e; margin-bottom: 15px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
     .summary-inline { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: bold; padding: 0 10px; }
     .val-income { color: #238636; }
     .val-expense { color: #eb5757; }
 
-    /* Интерфейс транзита (без стрелочек) */
+    /* Интерфейс транзита */
     #transitPanel { display: none; margin-bottom: 15px; }
     .transit-circles-row { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; }
     
@@ -76,7 +76,7 @@
     }
     
     .transit-circle select {
-      background: transparent; color: #fff; border: none; font-size: 14px; font-weight: bold;
+      background: transparent; color: #fff; border: none; font-size: 13px; font-weight: bold;
       width: 100%; text-align: center; text-align-last: center; outline: none; cursor: pointer;
       appearance: none; -webkit-appearance: none; -moz-appearance: none;
       padding: 0 5px;
@@ -151,7 +151,7 @@
       <textarea id="txInput" rows="2" placeholder="Например: 8 хлеб или получил 50..."></textarea>
     </div>
 
-    <!-- Блок транзита -->
+    <!-- Блок транзита (добавлены Долги в оба списка) -->
     <div id="transitPanel">
       <div class="transit-circles-row">
         <div class="transit-circle circle-from-box">
@@ -159,6 +159,7 @@
             <option value="Руки">Руки</option>
             <option value="Мила">Мила</option>
             <option value="Банк">Банк</option>
+            <option value="Долги">Долги</option>
           </select>
         </div>
         <div style="font-size: 20px; color: #8b949e;">➔</div>
@@ -168,13 +169,14 @@
             <option value="Мила">Мила</option>
             <option value="Банк">Банк</option>
             <option value="Руки">Руки</option>
+            <option value="Долги">Долги</option>
           </select>
         </div>
       </div>
       <input type="text" id="transitAmount" class="transit-amount" placeholder="Сумма перевода (€)">
     </div>
 
-    <!-- Панель Joy: доходы слева, расходы справа в одну строку -->
+    <!-- Панель Joy -->
     <div id="joySummaryPanel">
       <div class="summary-title">За текущий месяц</div>
       <div class="summary-inline">
