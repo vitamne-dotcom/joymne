@@ -57,7 +57,7 @@
     textarea { width: 100%; padding: 12px; border: 1px solid #30363d; background: #0d1117; color: #fff; border-radius: 12px; font-size: 16px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
     textarea::placeholder { color: #484f58; }
 
-    /* Панель доходов/расходов за месяц для Joy */
+    /* Панель доходов и расходов за месяц для Joy */
     #joySummaryPanel { display: none; text-align: left; padding: 5px; margin-bottom: 15px; }
     .summary-title { font-size: 13px; color: #8b949e; margin-bottom: 12px; text-align: center; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
     .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 15px; }
@@ -164,6 +164,7 @@
       <input type="text" id="transitAmount" class="transit-amount" placeholder="Сумма перевода (€)">
     </div>
 
+    <!-- Информационная панель Joy (только доходы и расходы за текущий месяц) -->
     <div id="joySummaryPanel">
       <div class="summary-title">За текущий месяц</div>
       <div class="summary-row">
@@ -203,6 +204,11 @@
   };
 
   function selectCategory(category) {
+    // Если повторно нажимаем на Joy — возвращаем по умолчанию "Руки" и скрываем сводку
+    if (activeCategory === "Joy" && category === "Joy") {
+      category = "Руки";
+    }
+
     activeCategory = category;
     
     document.querySelectorAll('.circle-btn').forEach(btn => btn.classList.remove('active'));
