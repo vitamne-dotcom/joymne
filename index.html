@@ -189,7 +189,7 @@
     <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;" onchange="handlePhoto(this)">
 
     <div class="actions" id="actionButtons">
-      <button class="submit-btn" onclick="submitTransaction()">Сохранить</button>
+      <button class="submit-btn" id="submitBtn" onclick="submitTransaction()">Сохранить</button>
       <button class="photo-btn" id="photoBtn" onclick="document.getElementById('photoInput').click()">📷 Чек</button>
     </div>
   </div>
@@ -201,16 +201,10 @@
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyouTYwZVPHbgb1jF7JoRmTIqW7novwK4hcwWCqlKDBq-4ExUp4gqx5deF5V0IiPJc7Dg/exec";
   
   let activeCategory = "Руки"; 
-  let isSubmitting = false;
   let cachedBalances = {};
 
   window.onload = function() {
     loadBalances();
-    const savedMsg = sessionStorage.getItem("joymne_toast");
-    if (savedMsg) {
-      showToast(savedMsg);
-      sessionStorage.removeItem("joymne_toast");
-    }
   };
 
   function selectCategory(category) {
@@ -308,7 +302,7 @@
   }
 
   async function submitTransaction(photoBase64 = null) {
-    if (isSubmitting || activeCategory === "Joy") return;
+    if (activeCategory === "Joy") return;
 
     let finalDescription = "";
 
@@ -336,29 +330,34 @@
       }
     }
 
-    isSubmitting = true;
-    showToast("Отправка данных...");
+    // Очищаем форму СРАЗУ, чтобы вы могли вводить следующую транзакцию, пока первая уходит в фон
+    if (activeCategory === "Транзит") {
+      document.getElementById("transitAmount").value = "";
+    } else {
+      document.getElementById("txInput").value = "";
+    }
 
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ category: activeCategory, text: finalDescription, photo: photoBase64 }),
-        redirect: "follow"
-      });
+    showToast("✓ Отправлено в фон...");
 
-      const data = await response.json();
+    // Отправляем в фоне без перезагрузки страницы
+    fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ category: activeCategory, text: finalDescription, photo: photoBase64 }),
+      redirect: "follow"
+    })
+    .then(response => response.json())
+    .then(data => {
       if (data.status === "success") {
-        sessionStorage.setItem("joymne_toast", "✓ Успешно сохранено!");
-        window.location.replace(window.location.pathname + "?t=" + Date.now());
+        showToast("✓ Сохранено в таблицу!");
+        loadBalances(); // Фоновое обновление балансов
       } else {
         alert("Ошибка сервера: " + (data.message || "Неизвестная ошибка"));
-        isSubmitting = false;
       }
-    } catch (err) {
+    })
+    .catch(err => {
       alert("Ошибка соединения с таблицей");
-      isSubmitting = false;
-    }
+    });
   }
 
   function handlePhoto(input) {
@@ -375,7 +374,7 @@
     const toast = document.getElementById("toast");
     toast.innerText = msg;
     toast.style.display = "block";
-    setTimeout(() => { toast.style.display = "none"; }, 3000);
+    setTimeout(() => { toast.style.display = "none"; }, 2500);
   }
 </script>
 
