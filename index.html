@@ -52,9 +52,15 @@
     .circle-hands { border-color: rgba(39, 174, 96, 0.4); }
     .circle-hands.active { border-color: #27ae60; background: rgba(39, 174, 96, 0.15); box-shadow: 0 0 20px rgba(39, 174, 96, 0.4); }
 
-    /* Зона карточки */
-    .input-card { background: #161b22; padding: 20px; border-radius: 20px; border: 1px solid #30363d; }
-    textarea { width: 100%; padding: 12px; border: 1px solid #30363d; background: #0d1117; color: #fff; border-radius: 12px; font-size: 16px; box-sizing: border-box; resize: none; margin-bottom: 15px; }
+    /* Зона карточки без рамок (парящий блок) */
+    .input-card { background: transparent; padding: 10px 0; border: none; }
+    
+    /* Текстовое поле без рамки */
+    textarea { 
+      width: 100%; padding: 12px; border: none; background: transparent; 
+      color: #fff; border-radius: 12px; font-size: 16px; box-sizing: border-box; 
+      resize: none; margin-bottom: 15px; text-align: center; outline: none; 
+    }
     textarea::placeholder { color: #484f58; }
 
     /* Панель Joy */
@@ -94,7 +100,11 @@
       box-shadow: 0 0 12px rgba(47, 128, 237, 0.15); 
     }
 
-    .transit-amount { width: 100%; padding: 12px; background: #0d1117; color: #fff; border: 1px solid #30363d; border-radius: 12px; font-size: 16px; text-align: center; box-sizing: border-box; }
+    .transit-amount { 
+      width: 100%; padding: 12px; background: transparent; color: #fff; 
+      border: none; border-radius: 12px; font-size: 16px; text-align: center; 
+      box-sizing: border-box; outline: none; 
+    }
     .transit-amount::placeholder { color: #484f58; }
 
     /* Кнопки сохранения с анимацией */
@@ -108,7 +118,7 @@
       background: #2f80ed !important;
       box-shadow: 0 0 15px rgba(47, 128, 237, 0.5);
     }
-    button.photo-btn { flex: 1; background: #30363d; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button.photo-btn { flex: 1; background: #161b22; border: 1px solid #30363d; color: white; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
     #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #21262d; color: #fff; padding: 10px 20px; border-radius: 20px; display: none; font-size: 14px; border: 1px solid #30363d; z-index: 1000; }
   </style>
@@ -152,11 +162,10 @@
     </div>
   </div>
 
-  <!-- Карточка ввода -->
+  <!-- Парящая карточка без рамок -->
   <div class="input-card">
     
     <div id="standardInput">
-      <!-- Убран пример, заменено на лаконичный понятный текст -->
       <textarea id="txInput" rows="2" placeholder="Сумма и описание..."></textarea>
     </div>
 
@@ -339,25 +348,21 @@
       }
     }
 
-    // Визуальный отклик: синяя кнопка и надпись "Учтено ✓"
     const submitBtn = document.getElementById("submitBtn");
     submitBtn.classList.add("success");
     submitBtn.innerText = "Учтено ✓";
 
-    // Очищаем поле ввода сразу, чтобы можно было писать следующую трату
     if (activeCategory === "Транзит") {
       document.getElementById("transitAmount").value = "";
     } else {
       document.getElementById("txInput").value = "";
     }
 
-    // Возвращаем кнопку в исходное состояние через 1 секунду
     setTimeout(() => {
       submitBtn.classList.remove("success");
       submitBtn.innerText = "Сохранить";
     }, 1000);
 
-    // Фоновая отправка в таблицу без перезагрузки
     fetch(APPS_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -367,7 +372,7 @@
     .then(response => response.json())
     .then(data => {
       if (data.status === "success") {
-        loadBalances(); // Фоновое обновление балансов
+        loadBalances();
       } else {
         alert("Ошибка сервера: " + (data.message || "Неизвестная ошибка"));
       }
