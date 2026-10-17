@@ -151,7 +151,7 @@
       <textarea id="txInput" rows="2" placeholder="Например: 8 хлеб или получил 50..."></textarea>
     </div>
 
-    <!-- Блок транзита (добавлены Долги в оба списка) -->
+    <!-- Блок транзита (Копилка заменена на Транзит в обоих списках) -->
     <div id="transitPanel">
       <div class="transit-circles-row">
         <div class="transit-circle circle-from-box">
@@ -160,15 +160,16 @@
             <option value="Мила">Мила</option>
             <option value="Банк">Банк</option>
             <option value="Долги">Долги</option>
+            <option value="Транзит">Транзит</option>
           </select>
         </div>
         <div style="font-size: 20px; color: #8b949e;">➔</div>
         <div class="transit-circle circle-to-box">
           <select id="walletTo">
-            <option value="">Копилка</option>
+            <option value="Транзит">Транзит</option>
+            <option value="Руки">Руки</option>
             <option value="Мила">Мила</option>
             <option value="Банк">Банк</option>
-            <option value="Руки">Руки</option>
             <option value="Долги">Долги</option>
           </select>
         </div>
@@ -321,11 +322,12 @@
         return;
       }
 
-      if (toWallet) {
-        finalDescription = `Перевод из ${fromWallet} в ${toWallet} ${amountVal}`;
-      } else {
-        finalDescription = `Перевод из ${fromWallet} в Копилка (Сбережения) ${amountVal}`;
+      if (fromWallet === toWallet) {
+        alert("Нельзя переводить на тот же счет!");
+        return;
       }
+
+      finalDescription = `Перевод из ${fromWallet} в ${toWallet} ${amountVal}`;
     } else {
       finalDescription = document.getElementById("txInput").value.trim();
       if (!finalDescription && !photoBase64) {
