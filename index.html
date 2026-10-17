@@ -97,9 +97,17 @@
     .transit-amount { width: 100%; padding: 12px; background: #0d1117; color: #fff; border: 1px solid #30363d; border-radius: 12px; font-size: 16px; text-align: center; box-sizing: border-box; }
     .transit-amount::placeholder { color: #484f58; }
 
-    /* Кнопки сохранения */
+    /* Кнопки сохранения с плавной анимацией */
     .actions { display: flex; gap: 10px; }
-    button.submit-btn { flex: 2; background: #238636; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    button.submit-btn { 
+      flex: 2; background: #238636; color: white; border: none; padding: 14px; 
+      border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; 
+      transition: background 0.3s ease, transform 0.1s ease; 
+    }
+    button.submit-btn.success {
+      background: #2f80ed !important; /* Синий цвет */
+      box-shadow: 0 0 15px rgba(47, 128, 237, 0.5);
+    }
     button.photo-btn { flex: 1; background: #30363d; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
     #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #21262d; color: #fff; padding: 10px 20px; border-radius: 20px; display: none; font-size: 14px; border: 1px solid #30363d; z-index: 1000; }
@@ -330,16 +338,25 @@
       }
     }
 
-    // Очищаем форму СРАЗУ, чтобы вы могли вводить следующую транзакцию, пока первая уходит в фон
+    // Мгновенная визуальная анимация нажатия (синий цвет + "Учтено")
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.classList.add("success");
+    submitBtn.innerText = "Учтено ✓";
+
+    // Очищаем форму СРАЗУ, чтобы можно было вводить следующую транзакцию
     if (activeCategory === "Транзит") {
       document.getElementById("transitAmount").value = "";
     } else {
       document.getElementById("txInput").value = "";
     }
 
-    showToast("✓ Отправлено в фон...");
+    // Возвращаем кнопку в исходное зеленое состояние через 1 секунду
+    setTimeout(() => {
+      submitBtn.classList.remove("success");
+      submitBtn.innerText = "Сохранить";
+    }, 1000);
 
-    // Отправляем в фоне без перезагрузки страницы
+    // Фоновая отправка данных в таблицу
     fetch(APPS_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -349,7 +366,6 @@
     .then(response => response.json())
     .then(data => {
       if (data.status === "success") {
-        showToast("✓ Сохранено в таблицу!");
         loadBalances(); // Фоновое обновление балансов
       } else {
         alert("Ошибка сервера: " + (data.message || "Неизвестная ошибка"));
