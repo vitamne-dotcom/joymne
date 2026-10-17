@@ -97,7 +97,7 @@
     .transit-amount { width: 100%; padding: 12px; background: #0d1117; color: #fff; border: 1px solid #30363d; border-radius: 12px; font-size: 16px; text-align: center; box-sizing: border-box; }
     .transit-amount::placeholder { color: #484f58; }
 
-    /* Кнопки сохранения с плавной анимацией */
+    /* Кнопки сохранения с анимацией */
     .actions { display: flex; gap: 10px; }
     button.submit-btn { 
       flex: 2; background: #238636; color: white; border: none; padding: 14px; 
@@ -105,7 +105,7 @@
       transition: background 0.3s ease, transform 0.1s ease; 
     }
     button.submit-btn.success {
-      background: #2f80ed !important; /* Синий цвет */
+      background: #2f80ed !important;
       box-shadow: 0 0 15px rgba(47, 128, 237, 0.5);
     }
     button.photo-btn { flex: 1; background: #30363d; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
@@ -156,7 +156,8 @@
   <div class="input-card">
     
     <div id="standardInput">
-      <textarea id="txInput" rows="2" placeholder="Например: 8 хлеб или ЗП 5000..."></textarea>
+      <!-- Убран пример, заменено на лаконичный понятный текст -->
+      <textarea id="txInput" rows="2" placeholder="Сумма и описание..."></textarea>
     </div>
 
     <!-- Блок транзита -->
@@ -338,25 +339,25 @@
       }
     }
 
-    // Мгновенная визуальная анимация нажатия (синий цвет + "Учтено")
+    // Визуальный отклик: синяя кнопка и надпись "Учтено ✓"
     const submitBtn = document.getElementById("submitBtn");
     submitBtn.classList.add("success");
     submitBtn.innerText = "Учтено ✓";
 
-    // Очищаем форму СРАЗУ, чтобы можно было вводить следующую транзакцию
+    // Очищаем поле ввода сразу, чтобы можно было писать следующую трату
     if (activeCategory === "Транзит") {
       document.getElementById("transitAmount").value = "";
     } else {
       document.getElementById("txInput").value = "";
     }
 
-    // Возвращаем кнопку в исходное зеленое состояние через 1 секунду
+    // Возвращаем кнопку в исходное состояние через 1 секунду
     setTimeout(() => {
       submitBtn.classList.remove("success");
       submitBtn.innerText = "Сохранить";
     }, 1000);
 
-    // Фоновая отправка данных в таблицу
+    // Фоновая отправка в таблицу без перезагрузки
     fetch(APPS_SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
